@@ -64,7 +64,7 @@ public class DataHelper {
     }
 
     public void generateSampleData() {
-        Member mem = new Member("Allan", "Adams", "WHITE");
+        Member mem = new Member("Allan", "ADAMS", "WHITE");
         mem.setMemberSince(System.currentTimeMillis());
         createMember(mem);
 
@@ -118,6 +118,7 @@ public class DataHelper {
 
     public void deleteMember(Member mem) {
         long id = mem.getId();
+        Log.e("DataHelper.deleteMember", "Deleting member: " + mem.getId());
         database.delete(MySqlHelper.TABLE_MEMBER, MySqlHelper.MEMBER_COLUMN_ID + " = " + id, null);
     }
 
@@ -175,7 +176,7 @@ public class DataHelper {
             } while (cur.moveToNext());
         }
         Log.e("DataHelper.listAll", "end of list");
-        db.close();
+       // db.close();
 
     }
 

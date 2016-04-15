@@ -25,6 +25,14 @@ public class Member {
         this.memberSince = System.currentTimeMillis();
     }
 
+    // This is apparently necessary to have the listView present the data properly
+    // By doing it this way we can bind the Member object to the listview adapter
+    // and the list will refresh properly
+    @Override
+    public String toString() {
+        return this.getLastName() + ", " + this.getFirstName();
+    }
+
     public long getId() {
         return id;
     }
