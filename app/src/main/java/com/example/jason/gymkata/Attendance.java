@@ -1,18 +1,25 @@
 package com.example.jason.gymkata;
 
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
 /**
  * Created by Jason on 2016-04-02.
  */
 public class Attendance {
 
     private long id;
-    private long attendDate;
+    private double attendDate;
     private long memberId;
+    private SQLiteDatabase database;
+    private MySqlHelper dbHelper;
 
     public Attendance() {
     }
 
-    public Attendance(long attendDate, long memberId) {
+    public Attendance(double attendDate, long memberId) {
         this.attendDate = attendDate;
         this.memberId = memberId;
     }
@@ -25,11 +32,11 @@ public class Attendance {
         this.id = id;
     }
 
-    public long getAttendDate() {
+    public double getAttendDate() {
         return attendDate;
     }
 
-    public void setAttendDate(long attendDate) {
+    public void setAttendDate(double attendDate) {
         this.attendDate = attendDate;
     }
 
@@ -40,4 +47,6 @@ public class Attendance {
     public void setMemberId(long memberId) {
         this.memberId = memberId;
     }
+
+
 }

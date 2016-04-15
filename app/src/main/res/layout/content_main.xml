@@ -25,11 +25,12 @@
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="366dp"
         android:id="@+id/lvMembers"
         android:layout_gravity="center_horizontal"
         android:choiceMode="singleChoice"
-        android:listSelector="?attr/colorPrimary" />
+        android:listSelector="?attr/colorPrimary"
+        android:scrollIndicators="right" />
 
     <LinearLayout
         android:orientation="horizontal"

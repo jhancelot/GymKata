@@ -1,5 +1,9 @@
 package com.example.jason.gymkata;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -16,9 +20,9 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
+import android.widget.Spinner;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -74,6 +78,11 @@ public class MainActivity extends AppCompatActivity
                                 + " and id=" + id
                                 + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
                 Log.e("setOnItem...", "lvMembers.getSelectedItem(): " + lvMembers.getSelectedItem());
+
+                Intent i = new Intent(getBaseContext(), MemberActivity.class);
+                startActivity(i);
+
+
                 // This code removes an entry from the list with a "fade" effect
                 /*
                   v.animate().setDuration(2000).alpha(0)
@@ -144,6 +153,9 @@ public class MainActivity extends AppCompatActivity
             namesList.add(m.getLastName() + ", " + m.getFirstName());
         }
     }
+
+
+
 
     @Override
     public void onBackPressed() {
@@ -230,7 +242,8 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.buttList:
                 Log.e("MainActivity.onClick: ", "Listing all rows...");
-                dataHelper.listAllToLog();
+                dataHelper.listMembersToLog();
+                dataHelper.listAttendanceToLog();
             //    adapter.notifyDataSetChanged();
             //    lvMembers.invalidate();
              //   lvMembers.setAdapter(adapter);
@@ -282,12 +295,58 @@ public class MainActivity extends AppCompatActivity
             case R.id.fab:
                 int total = dataHelper.countMembers();
                 Log.e(MainActivity.class.getName(), "Total rows in database: " + total);
+                //new MsgBox("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
+                msg("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
                 Snackbar.make(v, "Total rows in database: " + total, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 break;
         }
 
       //  dataHelper.close();
+
+    }
+    private void msg(String msg, View view, String buttonType) {
+        String OK_BUTTON = "OK";
+        String YES_NO_BUTTON = "YES_NO";
+        String DEFAULT_MSG = "NO MESSAGE SET";
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage(msg).setCancelable(false);
+        if (buttonType != null && buttonType.equals(OK_BUTTON)) {
+            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+        } else if (buttonType.equals(YES_NO_BUTTON)) {
+            Log.i("msgBox", "buttonType=" + buttonType);
+            builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //MainActivity.this.finish();
+                    dialog.cancel();
+                }
+            });
+            builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+
+        } else {
+            builder.setNeutralButton(OK_BUTTON, new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+        }
+        AlertDialog alert = builder.create();
+        alert.show();
 
     }
 }

@@ -1,9 +1,31 @@
 <resources>
     <string name="app_name">Chinese Boxing Connection</string>
     <string name="emailAddress">cbc@uniserve.com</string>
+    <string-array name="belt_level_list">
+        <item>White</item>
+        <item>Yellow</item>
+        <item>Purple</item>
+        <item>Blue</item>
+        <item>Green</item>
+        <item>Brown</item>
+        <item>Black</item>
+    </string-array>
+    <integer-array name="belt_images_list">
+        <item>@drawable/whitebelt</item>
+        <item>@drawable/yellowbelt</item>
+        <item>@drawable/purplebelt</item>
+        <item>@drawable/bluebelt</item>
+        <item>@drawable/greenbelt</item>
+        <item>@drawable/brownbelt</item>
+        <item>@drawable/blackbelt</item>
+
+    </integer-array>
+
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
     <string name="toolbar_title">[Enter Your Name to Filter]</string>
+    <string name="title_activity_member">MemberActivity</string>
+
 </resources>
