@@ -22,7 +22,7 @@ public class DataHelper {
     private String[] member_cols = {MySqlHelper.MEMBER_COLUMN_ID, MySqlHelper.MEMBER_COLUMN_FIRSTNAME, MySqlHelper.MEMBER_COLUMN_LASTNAME,
        MySqlHelper.MEMBER_COLUMN_DOB, MySqlHelper.MEMBER_COLUMN_EMAIL, MySqlHelper.MEMBER_COLUMN_PHONE, MySqlHelper.MEMBER_COLUMN_BELT_LEVEL,
         MySqlHelper.MEMBER_MEMBERSINCE};
-    private String[] attend_cols = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
+
 
     public DataHelper(Context context) {
         dbHelper = new MySqlHelper(context);
@@ -223,7 +223,7 @@ public class DataHelper {
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
         }
-        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, attend_cols, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
+        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
                 null, null, null, null);
         cur.moveToFirst();
         Attendance newAttend = cursorToAttendance(cur);

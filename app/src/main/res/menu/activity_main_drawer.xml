@@ -2,34 +2,36 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
+
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:id="@+id/nav_login"
+            android:icon="@drawable/blackbelt"
+            android:title="@string/nav_drawer_login" />
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
-        <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/nav_runmode"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:title="@string/nav_drawer_run_mode" />
         <item
-            android:id="@+id/nav_manage"
+            android:id="@+id/nav_members"
             android:icon="@drawable/ic_menu_manage"
-            android:title="Tools" />
+            android:title="@string/nav_drawer_members" />
+        <item
+            android:id="@+id/nav_attendance"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="@string/nav_drawer_attendance" />
+
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/nav_drawer_share">
         <menu>
             <item
-                android:id="@+id/nav_share"
+                android:id="@+id/nav_import"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:title="@string/nav_drawer_import" />
             <item
-                android:id="@+id/nav_send"
+                android:id="@+id/nav_export"
                 android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
+                android:title="@string/nav_drawer_export" />
         </menu>
     </item>
 

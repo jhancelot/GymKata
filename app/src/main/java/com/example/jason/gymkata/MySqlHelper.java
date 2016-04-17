@@ -62,6 +62,8 @@ public class MySqlHelper extends SQLiteOpenHelper {
             + ATTEND_COLUMN_ATTEND_DATE + " integer not null,"
             + ATTEND_COLUMN_MEMBER_ID + " text not null);";
 
+    public static final String[] ATTEND_COLS = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         Log.w(MySqlHelper.class.getName(), "Creating table " + TABLE_MEMBER);

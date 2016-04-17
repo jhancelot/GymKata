@@ -42,7 +42,9 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/etFirstName"
-                android:layout_column="5" />
+                android:layout_column="5"
+                android:focusable="true"
+                android:textIsSelectable="true" />
         </TableRow>
 
         <TableRow
@@ -182,11 +184,26 @@
         </TableRow>
     </TableLayout>
 
-    <ImageView
-        android:layout_width="105dp"
-        android:layout_height="173dp"
-        android:id="@+id/imageBeltLevel"
-        android:layout_gravity="center_horizontal"
-        android:src="@drawable/blackbelt"
-        android:backgroundTint="#f3d1d1" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.16">
+
+        <ImageView
+            android:layout_width="105dp"
+            android:layout_height="173dp"
+            android:id="@+id/imageBeltLevel"
+            android:src="@drawable/blackbelt"
+            android:backgroundTint="#f3d1d1"
+            android:layout_gravity="right" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:id="@+id/buttSave" />
+    </LinearLayout>
+
 </LinearLayout>

@@ -22,8 +22,6 @@ public class SplashActivity extends AppCompatActivity {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    //                Snackbar.make(MainActivity.this, "Error=" + e.toString(), Snackbar.LENGTH_INDEFINITE)
-                    //                      .setAction("Action", null).show();
                 }
             }
         };

@@ -3,7 +3,7 @@ package com.example.jason.gymkata;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.TypedArray;
+
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -22,7 +22,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.Spinner;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -143,6 +142,7 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
     private void refreshListData() {
@@ -195,17 +195,30 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        if (id == R.id.nav_login) {
+            // Handle Login
+            Log.i("OnNav","LOGIN");
+            Intent i = new Intent(getBaseContext(), LoginActivity.class);
+            startActivity(i);
+        } else if (id == R.id.nav_runmode) {
+            // Handle the RUN MODE action
+            Log.i("OnNav","RUN MODE");
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_members) {
+            Log.i("OnNav","EDIT MEMBERS");
+            Intent i = new Intent(getBaseContext(), MemberActivity.class);
+            startActivity(i);
 
-        } else if (id == R.id.nav_manage) {
+        } else if (id == R.id.nav_attendance) {
+            Log.i("OnNav","EDIT ATTENDANCE");
+            Intent i = new Intent(getBaseContext(), AttendanceActivity.class);
+            startActivity(i);
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_import) {
+            Log.i("OnNav","IMPORT");
 
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_export) {
+            Log.i("OnNav","EXPORT");
 
         }
 
@@ -300,6 +313,7 @@ public class MainActivity extends AppCompatActivity
                 Snackbar.make(v, "Total rows in database: " + total, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
                 break;
+
         }
 
       //  dataHelper.close();
