@@ -50,6 +50,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.jason.gymkata.MainActivity" />
         </activity>
+        <activity
+            android:name=".TestDatePickerActivity"
+            android:label="@string/title_activity_test_date_picker"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.jason.gymkata.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

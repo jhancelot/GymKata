@@ -186,24 +186,20 @@
 
 
     <LinearLayout
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.16">
+
 
         <ImageView
             android:layout_width="105dp"
             android:layout_height="173dp"
             android:id="@+id/imageBeltLevel"
             android:src="@drawable/blackbelt"
-            android:backgroundTint="#f3d1d1"
-            android:layout_gravity="right" />
+            android:backgroundTint="#f3d1d1" />
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Save"
-            android:id="@+id/buttSave" />
+
     </LinearLayout>
 
 </LinearLayout>

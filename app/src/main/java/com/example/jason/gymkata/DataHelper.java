@@ -196,7 +196,7 @@ public class DataHelper {
             mem.setId(cur.getLong(0));
             mem.setFirstName(cur.getString(1));
             mem.setLastName(cur.getString(2));
-            mem.setDob(cur.getDouble(3));
+            mem.setDob(cur.getLong(3));
             mem.setPhoneNumber(cur.getString(4));
             mem.setEmail(cur.getString(5));
             mem.setBeltLevel(cur.getString(6));

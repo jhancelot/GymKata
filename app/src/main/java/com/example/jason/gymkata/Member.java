@@ -1,6 +1,8 @@
 package com.example.jason.gymkata;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by Jason on 2016-04-02.
@@ -9,7 +11,7 @@ public class Member {
     private long id;
     private String firstName;
     private String lastName;
-    private double dob;
+    private long dob;
     private String phoneNumber;
     private String email;
     private String beltLevel;
@@ -58,11 +60,13 @@ public class Member {
     }
 
     public double getDob() {
-        return dob;
+        SimpleDateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_FORMAT, Locale.getDefault());
+        return dob; //dateFormat.format(dob);
     }
 
-    public void setDob(double d) {
-        this.dob = d;
+    public void setDob(long dob) {
+
+        this.dob = dob;
     }
 
     public String getPhoneNumber() {

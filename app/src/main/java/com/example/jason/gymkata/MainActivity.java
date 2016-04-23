@@ -215,6 +215,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(i);
 
         } else if (id == R.id.nav_import) {
+            Intent i = new Intent(getBaseContext(), TestDatePickerActivity.class);
+            startActivity(i);
             Log.i("OnNav","IMPORT");
 
         } else if (id == R.id.nav_export) {

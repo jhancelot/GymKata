@@ -16,6 +16,8 @@ public class MySqlHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    // Here's a public constant for dates:
+    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
     // MEMBER TABLE
     public static final String TABLE_MEMBER = "Member";
     public static final String MEMBER_COLUMN_ID = "_id";

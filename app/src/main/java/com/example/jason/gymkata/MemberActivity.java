@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
@@ -47,12 +48,14 @@ public class MemberActivity extends AppCompatActivity {
             }
         });
 
+
+
         // FLOATING ACTION BAR
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
