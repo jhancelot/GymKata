@@ -34,11 +34,11 @@ public class MySqlHelper extends SQLiteOpenHelper {
             + " integer primary key autoincrement, "
             + MEMBER_COLUMN_FIRSTNAME + " text not null,"
             + MEMBER_COLUMN_LASTNAME + " text not null,"
-            + MEMBER_COLUMN_DOB + " REAL,"
+            + MEMBER_COLUMN_DOB + " DATETIME,"
             + MEMBER_COLUMN_EMAIL + " text,"
             + MEMBER_COLUMN_PHONE + " text,"
             + MEMBER_COLUMN_BELT_LEVEL + " text,"
-            + MEMBER_MEMBERSINCE + " REAL);";
+            + MEMBER_MEMBERSINCE + " DATETIME);";
 
     // BELT LEVEL TABLE
     public static final String TABLE_BELT = "BeltLevel";
@@ -61,7 +61,7 @@ public class MySqlHelper extends SQLiteOpenHelper {
     private static final String ATTEND_TABLE_CREATE = "create table "
             + TABLE_ATTENDANCE + "(" + ATTEND_COLUMN_ID
             + " integer primary key autoincrement, "
-            + ATTEND_COLUMN_ATTEND_DATE + " integer not null,"
+            + ATTEND_COLUMN_ATTEND_DATE + " DATETIME,"
             + ATTEND_COLUMN_MEMBER_ID + " text not null);";
 
     public static final String[] ATTEND_COLS = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};

@@ -8,14 +8,14 @@ import java.util.Locale;
  * Created by Jason on 2016-04-02.
  */
 public class Member {
-    private long id;
+    private long id = -1;
     private String firstName;
     private String lastName;
     private long dob;
     private String phoneNumber;
     private String email;
     private String beltLevel;
-    private double memberSince;
+    private long memberSince;
 
     public Member() {
     }
@@ -93,7 +93,7 @@ public class Member {
         this.beltLevel = beltLevel;
     }
     
-    public double getMemberSince() { return memberSince;}
+    public long getMemberSince() { return memberSince;}
 
-    public void setMemberSince(double memSince) {this.memberSince = memSince;}
+    public void setMemberSince(long memSince) {this.memberSince = memSince;}
 }

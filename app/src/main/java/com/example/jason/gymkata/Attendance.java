@@ -6,7 +6,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -15,16 +19,21 @@ import java.util.List;
 public class Attendance {
 
     private long id;
-    private double attendDate;
+    private long attendDate;
     private long memberId;
 
     private SQLiteDatabase database;
+    private MySqlHelper dbHelper;
 
 
     public Attendance() {
     }
 
-    public Attendance(double attendDate, long memberId) {
+    public Attendance(long memberId) {
+        this.memberId = memberId;
+    }
+
+    public Attendance(long memberId, long attendDate) {
         this.attendDate = attendDate;
         this.memberId = memberId;
     }
@@ -37,12 +46,23 @@ public class Attendance {
         this.id = id;
     }
 
-    public double getAttendDate() {
-        return attendDate;
+    public long getAttendDate() {
+
+        return ((attendDate > 0)?attendDate:System.currentTimeMillis());
     }
 
-    public void setAttendDate(double attendDate) {
+    public void setAttendDate(long attendDate) {
         this.attendDate = attendDate;
+    }
+
+    public String getFormattedDate() {
+        // Create a DateFormatter object for displaying date in specified format.
+        DateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+
+        // Create a calendar object that will convert the date and time value in milliseconds to date.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(this.attendDate);
+        return formatter.format(calendar.getTime());
     }
 
     public long getMemberId() {
@@ -77,11 +97,43 @@ public class Attendance {
 
     }
 
+    public long createAttend() throws Exception {
+
+
+
+        Log.e("createAttend",
+                "ID:" + this.getId()
+                        + "; Date: " + this.getAttendDate()
+                        + "; formatteddate: " + this.getFormattedDate()
+                        + "; Member ID: " + this.getMemberId());
+        ContentValues values = new ContentValues();
+        values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, this.getAttendDate());
+        values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, this.getMemberId());
+        long insertId = 0;
+        try {
+            // YOU NEED TO FIGURE OUT HOW TO PASS THE CONTEXT TO THIS CLASS OR MOVE THE SQL STUFF BACK TO DATAHELPER
+          //  dbHelper = new MySqlHelper(context);
+            database = dbHelper.getWritableDatabase();
+            insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
+        } catch (Exception e) {
+            Log.e(Attendance.class.getName(), "Error inserting into database: " + e.toString());
+            throw e;
+        }
+        /*
+        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
+                null, null, null, null);
+        cur.moveToFirst();
+        Attendance newAttend = cursorToAttendance(cur);
+        cur.close();
+        */
+        return insertId;
+    }
+
     private static Attendance cursorToAttendance(Cursor cur) {
         Attendance att = new Attendance();
         try {
             att.setId(cur.getLong(0));
-            att.setAttendDate(cur.getDouble(1));
+            att.setAttendDate(cur.getLong(1));
             att.setId(cur.getLong(2));
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error setting values in cursorToAttendance: " + e.toString());

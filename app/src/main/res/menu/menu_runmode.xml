@@ -1,11 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.example.jason.gymkata.AttendanceActivity">
-
+    tools:context="com.example.jason.gymkata.RunModeActivity"
+    >
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_admin_login"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/action_sign_in_short"
         app:showAsAction="never" />
 </menu>

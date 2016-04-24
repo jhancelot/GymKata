@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity
     ArrayAdapter<Member> adapter;
     SearchView svFilter;
     Member currentMember;
+    Menu mainMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,8 +79,7 @@ public class MainActivity extends AppCompatActivity
                                 + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
                 Log.e("setOnItem...", "lvMembers.getSelectedItem(): " + lvMembers.getSelectedItem());
 
-                Intent i = new Intent(getBaseContext(), MemberActivity.class);
-                startActivity(i);
+
 
 
                 // This code removes an entry from the list with a "fade" effect
@@ -156,7 +156,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -171,6 +170,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        this.mainMenu = menu;
         return true;
     }
 
@@ -182,10 +182,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_admin_login) {
+            Log.i("onOption", "Admin Login Selected");
             return true;
         }
+        if (id == R.id.action_save) {
+            //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
 
+            mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+            Log.e("onOption", "SAVE selected");
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -202,6 +208,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(i);
         } else if (id == R.id.nav_runmode) {
             // Handle the RUN MODE action
+            Intent i = new Intent(getBaseContext(), RunModeActivity.class);
+            startActivity(i);
             Log.i("OnNav","RUN MODE");
 
         } else if (id == R.id.nav_members) {

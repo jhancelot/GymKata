@@ -200,7 +200,7 @@ public class DataHelper {
             mem.setPhoneNumber(cur.getString(4));
             mem.setEmail(cur.getString(5));
             mem.setBeltLevel(cur.getString(6));
-            mem.setMemberSince(cur.getDouble(7));
+            mem.setMemberSince(cur.getLong(7));
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error setting values in cursorToMember: " + e.toString());
         }
@@ -235,7 +235,7 @@ public class DataHelper {
         Attendance attend = new Attendance();
         try {
             attend.setId(cur.getLong(0));
-            attend.setAttendDate(cur.getDouble(1));
+            attend.setAttendDate(cur.getLong(1));
             attend.setMemberId(cur.getLong(2));
 
         } catch (Exception e) {
