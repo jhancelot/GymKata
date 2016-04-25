@@ -1,5 +1,8 @@
 package com.example.jason.gymkata;
 
+import android.content.Context;
+import android.util.Log;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -59,7 +62,7 @@ public class Member {
         this.lastName = lastName;
     }
 
-    public double getDob() {
+    public long getDob() {
         SimpleDateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_FORMAT, Locale.getDefault());
         return dob; //dateFormat.format(dob);
     }
@@ -96,4 +99,17 @@ public class Member {
     public long getMemberSince() { return memberSince;}
 
     public void setMemberSince(long memSince) {this.memberSince = memSince;}
+
+    public long createMember(Context context) throws Exception {
+
+        // long insertId = 0;
+        Log.i("Member.createMember",
+                "ID:" + this.getId()
+                        + "; Date: " + this.getMemberSince()
+                        + "; formatteddate: " + MySqlHelper.getFormattedDate(this.getMemberSince())
+                        + "; Member ID: " + this.getId());
+        DataHelper dataHelper = new DataHelper(context);
+
+        return dataHelper.createMember(this);
+    }
 }

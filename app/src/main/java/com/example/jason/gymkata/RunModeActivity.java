@@ -1,5 +1,6 @@
 package com.example.jason.gymkata;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -28,6 +29,7 @@ public class RunModeActivity extends AppCompatActivity {
     SearchView svFilter;
     Member currentMember;
     Menu runmodeMenu;
+    //Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +37,8 @@ public class RunModeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_run_mode);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
 
         // LIST VIEW
         // OPEN THE DATABASE
@@ -120,7 +124,7 @@ public class RunModeActivity extends AppCompatActivity {
                     Log.w("TESTING2", "att.getDAte: " + att.getAttendDate());
                     try {
                         long attendId = -1;
-                        attendId = att.createAttend();
+                        attendId = att.createAttend(RunModeActivity.this);
                         if (attendId == -1) throw new Exception("attendId is -1, so something went wrong");
                         Snackbar.make(view, "Welcome " + currentMember.getFirstName() + " " + currentMember.getLastName() + "!", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
@@ -155,6 +159,8 @@ public class RunModeActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_admin_login) {
             Log.i("onOption", "Admin Login Selected");
+            Intent i = new Intent(getBaseContext(), LoginActivity.class);
+            startActivity(i);
             return true;
         }
 

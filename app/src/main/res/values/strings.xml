@@ -32,6 +32,8 @@
     <string name="nav_drawer_login">Login</string>
 
     <string name="action_settings">Settings</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
     <string name="toolbar_title">[Enter Your Name to Filter]</string>
     <string name="title_activity_member">Member Activity</string>
     <string name="title_activity_login">Sign in</string>
@@ -55,6 +57,16 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_run_mode">Chinese Boxing Connection</string>
     <string name="attendance_instructions">Find Your Name to Sign In</string>
+
+    <!-- Strings related to Member Activity -->
+    <string name="error_invalid_fname">First Name value is invalid</string>
+    <string name="error_invalid_lname">Last Name value is invalid</string>
+    <string name="error_invalid_dob">DOB value is invalid</string>
+    <string name="error_invalid_member_email">Email value is invalid</string>
+    <string name="error_invalid_phone">Phone value is invalid</string>
+    <string name="error_invalid_membersince">Member Since value is invalid</string>
+    <string name="error_invalid_beltlevel">Belt Level value is invalid</string>
+
 
 
 </resources>

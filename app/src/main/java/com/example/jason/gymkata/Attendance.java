@@ -97,28 +97,32 @@ public class Attendance {
 
     }
 
-    public long createAttend() throws Exception {
+    public long createAttend(Context context) throws Exception {
 
-
-
-        Log.e("createAttend",
+       // long insertId = 0;
+        Log.e("Attend.createAttend",
                 "ID:" + this.getId()
                         + "; Date: " + this.getAttendDate()
                         + "; formatteddate: " + this.getFormattedDate()
                         + "; Member ID: " + this.getMemberId());
+        DataHelper dataHelper = new DataHelper(context);
+
+        return dataHelper.createAttend(this);
+        /*
         ContentValues values = new ContentValues();
         values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, this.getAttendDate());
         values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, this.getMemberId());
-        long insertId = 0;
         try {
             // YOU NEED TO FIGURE OUT HOW TO PASS THE CONTEXT TO THIS CLASS OR MOVE THE SQL STUFF BACK TO DATAHELPER
           //  dbHelper = new MySqlHelper(context);
+            dbHelper = new MySqlHelper(context);
             database = dbHelper.getWritableDatabase();
             insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
         } catch (Exception e) {
             Log.e(Attendance.class.getName(), "Error inserting into database: " + e.toString());
             throw e;
         }
+        */
         /*
         Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
                 null, null, null, null);
@@ -126,7 +130,6 @@ public class Attendance {
         Attendance newAttend = cursorToAttendance(cur);
         cur.close();
         */
-        return insertId;
     }
 
     private static Attendance cursorToAttendance(Cursor cur) {

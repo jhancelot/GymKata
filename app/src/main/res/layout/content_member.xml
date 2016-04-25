@@ -65,7 +65,8 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/etLastName"
-                android:layout_column="5" />
+                android:layout_column="5"
+                 />
         </TableRow>
 
         <TableRow
@@ -187,17 +188,17 @@
 
     <LinearLayout
         android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.16">
+        android:layout_width="140dp"
+        android:layout_height="109dp"
+        android:background="#e4dcdc">
 
 
         <ImageView
-            android:layout_width="105dp"
-            android:layout_height="173dp"
+            android:layout_width="103dp"
+            android:layout_height="103dp"
             android:id="@+id/imageBeltLevel"
             android:src="@drawable/blackbelt"
-            android:backgroundTint="#f3d1d1" />
+            android:layout_gravity="center" />
 
 
     </LinearLayout>

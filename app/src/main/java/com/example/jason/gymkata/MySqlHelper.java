@@ -5,6 +5,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 /**
  * Created by Jason on 2016-04-02.
  */
@@ -65,6 +69,15 @@ public class MySqlHelper extends SQLiteOpenHelper {
             + ATTEND_COLUMN_MEMBER_ID + " text not null);";
 
     public static final String[] ATTEND_COLS = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
+
+    public static String getFormattedDate(long date) {
+        DateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+
+        // Create a calendar object that will convert the date and time value in milliseconds to date.
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(date);
+        return formatter.format(calendar.getTime());
+    }
 
     @Override
     public void onCreate(SQLiteDatabase db) {

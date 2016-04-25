@@ -13,24 +13,44 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
-public class MemberActivity extends AppCompatActivity {
+public class MemberActivity extends AppCompatActivity implements View.OnClickListener {
     private Spinner spin;
     private TypedArray beltImages;
     private String[] belts;
+    private String belt;
     private ImageView image;
     private Calendar cal;
     private Menu mainMenu;
+
+    private EditText mLastName;
+    private EditText mFirstName;
+//    private long mDob;
+    private EditText mEmail;
+    private EditText mPhone;
+   // private String mBeltLevel;
+ //   private long mMemberSince;
+
+    private final static int READ_ONLY = 0;
+    private final static int READ_WRITE = 1;
+    private int editMode = READ_ONLY;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_member);
 
+        mFirstName = (EditText) findViewById(R.id.etFirstName);
+        mLastName = (EditText) findViewById(R.id.etLastName);
+        mEmail = (EditText) findViewById(R.id.etEmail);
+        mPhone = (EditText) findViewById(R.id.etPhone);
         // Date Picker Fragment
 
 
@@ -50,6 +70,8 @@ public class MemberActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 image.setImageResource(beltImages.getResourceId(spin.getSelectedItemPosition(),-1));
+                belt = parent.getItemAtPosition(position).toString();
+                Log.i("ItemSelected", "belt: " + belt);
             }
 
             @Override
@@ -62,13 +84,7 @@ public class MemberActivity extends AppCompatActivity {
 
         // FLOATING ACTION BAR
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        fab.setOnClickListener(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
@@ -94,10 +110,112 @@ public class MemberActivity extends AppCompatActivity {
         }
         if (id == R.id.action_save) {
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
+            if (editMode == READ_ONLY) {
+                editMode = READ_WRITE;
+                mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
+            } else {
+                // Check form field values
+                String msg = validateForm();
+                if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
+                    // Save Member Data
+                    editMode = READ_ONLY;
+                    mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+                    Member mem = new Member(mFirstName.getText().toString(), mLastName.getText().toString(), belt);
+                    if (mEmail != null && mEmail.getText().toString().length() > 0) mem.setEmail(mEmail.getText().toString());
+                    if (mPhone != null && mPhone.getText().toString().length() > 0) mem.setPhoneNumber(mPhone.getText().toString());
+                    try {
+                        long memberId = -1;
+                        memberId = mem.createMember(MemberActivity.this);
+                        if (memberId == -1) throw new Exception("memberId is -1, so something went wrong");
+                        msgBox("Saved!", findViewById(android.R.id.content));
+                    } catch (Exception e) {
+                        msgBox("Error creating Member Record: " + e.toString(),findViewById(android.R.id.content) );
+                        e.printStackTrace();
+                    }
 
-            mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
-            Log.e("onOption", "SAVE selected");
+                } else {
+                    // use this syntax to access the current "View"
+                    msgBox(msg, findViewById(android.R.id.content));
+                }
+            }
+
+
+            Log.i("onOption", "SAVE selected");
+        } else if (id == R.id.action_delete) {
+            Log.i("onOption", "DELETE selected");
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private String validateForm() {
+        List<String> msgs = new ArrayList<String>();
+        String readableMsg = "";
+        if (mFirstName.getText() == null || mFirstName.getText().length() == 0) {
+            msgs.add("First Name");
+        }
+        if (mLastName.getText() == null || mLastName.getText().length() == 0) {
+            msgs.add("Last Name");
+        }
+        if (mEmail.getText() == null || mEmail.getText().length() == 0) {
+            msgs.add("Email");
+
+        }
+        if (mPhone.getText() == null || mPhone.getText().length() == 0) {
+            msgs.add("Phone number");
+
+        }
+        for (String msg: msgs) {
+            readableMsg = readableMsg + ", " + msg;
+        }
+        return (readableMsg.length() == 0)?readableMsg:readableMsg + " are invalid";
+    }
+
+    @Override
+    public void onClick(View v) {
+        //ArrayAdapter<Member> adapter = (ArrayAdapter<Member>) lvMembers.getAdapter();
+        // OPEN THE DATABASE
+        /*
+        dataHelper = new DataHelper(this);
+        try {
+            dataHelper.open();
+            Log.w(MainActivity.class.getName(), "Database successfully opened ");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+        }
+*/
+        // check which widget was clicked
+        switch (v.getId()) {
+            case R.id.buttGenerate:
+                Log.e("MainActivity.onClick", "SAVE MEMBER CLICKED");
+
+                break;
+            case R.id.buttDelOne:
+                Log.e("MainActivity.onClick: ", "DELETE MEMBER CLICKED");
+
+                break;
+            case R.id.fab:
+                Log.e("MainActivity.onClick: ", "FLOATING ACTION BAR CLICKED");
+                Snackbar.make(v, "FLOATING ACTION BAR CLICKED", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+                /*
+                int total = dataHelper.countMembers();
+                Log.e(MainActivity.class.getName(), "Total rows in database: " + total);
+                //new MsgBox("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
+                msg("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
+                Snackbar.make(v, "Total rows in database: " + total, Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+               */
+                break;
+
+        }
+
+        //  dataHelper.close();
+
+    }
+    private void msgBox(String msg, View view) {
+        Log.e("MemberActivity", msg);
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
     }
 }
