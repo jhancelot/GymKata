@@ -101,15 +101,29 @@ public class Member {
     public void setMemberSince(long memSince) {this.memberSince = memSince;}
 
     public long createMember(Context context) throws Exception {
-
-        // long insertId = 0;
+        long insertId = -1;
         Log.i("Member.createMember",
                 "ID:" + this.getId()
                         + "; Date: " + this.getMemberSince()
                         + "; formatteddate: " + MySqlHelper.getFormattedDate(this.getMemberSince())
                         + "; Member ID: " + this.getId());
         DataHelper dataHelper = new DataHelper(context);
+        dataHelper.open();
+        dataHelper.createMember(this);
+        dataHelper.close();
+        return insertId;
+    }
 
-        return dataHelper.createMember(this);
+    public void delete(Context context) throws Exception {
+        Log.i("Member.DeleteMember",
+                "ID:" + this.getId()
+                        + "; Date: " + this.getMemberSince()
+                        + "; formatteddate: " + MySqlHelper.getFormattedDate(this.getMemberSince())
+                        + "; Member ID: " + this.getId());
+        DataHelper dataHelper = new DataHelper(context);
+        dataHelper.open();
+        dataHelper.deleteMember(this);
+        dataHelper.close();
+
     }
 }

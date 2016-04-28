@@ -50,6 +50,7 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+
     <string name="title_activity_attendance">Attendance Activity</string>
     <string name="title_activity_test_date_picker">TestDatePickerActivity</string>
 

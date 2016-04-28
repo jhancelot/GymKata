@@ -37,6 +37,7 @@ public class DataHelper {
     }
 
     public void close() {
+        // this call is to the superclass which closes all open databases
         dbHelper.close();
     }
 
@@ -56,14 +57,15 @@ public class DataHelper {
                         + "; First Name: " + mem.getFirstName()
                         + "; Last Name: " + mem.getLastName()
                         + "; Belt Level: " + mem.getBeltLevel());
+        Log.i("database.isreadonly","ro=" + database.isReadOnly());
         try {
-            if (database == null || database.isReadOnly()) database = dbHelper.getWritableDatabase();
+            // ensure we have a writable database
+            this.open();
             insertId = database.insert(MySqlHelper.TABLE_MEMBER, null, values);
+            this.close();
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
             e.printStackTrace();
-        } finally {
-            this.close();
         }
         /*
         Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, MySqlHelper.MEMBER_COLUMN_ID + " = " + insertId,
@@ -87,13 +89,12 @@ public class DataHelper {
                         + "; Date: " + attend.getAttendDate()
                         + "; Member ID: " + attend.getMemberId());
         try {
-            if (database == null || database.isReadOnly()) database = dbHelper.getWritableDatabase();
+            this.open(); // ensure we have a writable database
             insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
+            this.close();
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
             e.printStackTrace();
-        } finally {
-            this.close();
         }
         return insertId;
          /*
@@ -107,24 +108,35 @@ public class DataHelper {
 
     }
 
-    public void generateSampleData() {
+    public void generateSampleData(Context context) {
+        // this line is only necessary because we're calling local methods without instantiating
+        // this class first (which is where the context is normally passed in)
+        if (dbHelper == null) dbHelper = new MySqlHelper(context);
+
+        long memberId = -1;
         Member mem = new Member("Allan", "ADAMS", "WHITE");
         mem.setMemberSince(System.currentTimeMillis());
-        mem.setId(this.createMember(mem));
-        Attendance attend = new Attendance(mem.getMemberSince(), mem.getId());
-        createAttend(attend);
+        //mem.setId(this.createMember(mem));
+        memberId = -1;
+        memberId = this.createMember(mem);
+        Attendance attend = new Attendance(mem.getMemberSince(), memberId);
+        this.createAttend(attend);
 
+        memberId = -1;
         mem = new Member("Beatrice", "BONNER", "YELLOW");
         mem.setMemberSince(System.currentTimeMillis());
-        mem.setId(this.createMember(mem));
-        attend = new Attendance(mem.getMemberSince(), mem.getId());
-        createAttend(attend);
+        memberId = this.createMember(mem);
+        attend = new Attendance(mem.getMemberSince(), memberId);
+        this.createAttend(attend);
 
+        memberId = -1;
         mem = new Member("Charles", "CARSON", "PURPLE");
         mem.setMemberSince(System.currentTimeMillis());
-        mem.setId(this.createMember(mem));
-        attend = new Attendance(mem.getMemberSince(), mem.getId());
-        createAttend(attend);
+        memberId = this.createMember(mem);
+        attend = new Attendance(mem.getMemberSince(), memberId);
+        this.createAttend(attend);
+
+        //dbHelper = null;
     }
 
     public int countMembers() {
@@ -196,8 +208,12 @@ public class DataHelper {
         countCursor.close();
 
     }
-    public List<Member> getAllMembers() {
+    public List<Member> getAllMembers(Context context) {
+        // this line is only necessary because we're calling local methods without instantiating
+        // this class first (which is where the context is normally passed in)
+        if (dbHelper == null) dbHelper = new MySqlHelper(context);
         List<Member> members = new ArrayList<Member>();
+        if (database == null || !database.isReadOnly()) database = dbHelper.getReadableDatabase();
         Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, null, null, null, null, null);
         cur.moveToFirst();
         while (!cur.isAfterLast()) {
@@ -206,12 +222,15 @@ public class DataHelper {
             cur.moveToNext();
         }
         cur.close();
+        database.close();
         return members;
 
     }
 
-    public void listMembersToLog() {
-        String selectQuery = "SELECT * FROM " + MySqlHelper.TABLE_MEMBER;
+    public void listMembersToLog(Context context) {
+        // this line is only necessary because we're calling local methods without instantiating
+        // this class first (which is where the context is normally passed in)
+        if (dbHelper == null) dbHelper = new MySqlHelper(context);        String selectQuery = "SELECT * FROM " + MySqlHelper.TABLE_MEMBER;
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cur = db.rawQuery(selectQuery, null);
         Log.e("DataHelper.listAll", "listing all members...");
@@ -282,6 +301,76 @@ public class DataHelper {
 
     }
 
+    /*
+          Log.e("createAttend",
+                "ID:" + attend.getId()
+                        + "; Date: " + attend.getAttendDate()
+                        + "; Member ID: " + attend.getMemberId());
+        try {
+            if (database == null || database.isReadOnly()) database = dbHelper.getWritableDatabase();
+            insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
+        } catch (Exception e) {
+            Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
+            e.printStackTrace();
+        } finally {
+            this.close();
+        }
+     */
+    public boolean validateLogin(SystemUser user) {
+        boolean loginSuccessful = false;
+        Log.d("validateLogin()a: ", user.get_name() + " " + user.get_password());
+        if (database == null || !database.isReadOnly()) database = dbHelper.getReadableDatabase();
+        // Something is wrong with this query, so comment out for now (use below RAW query instead)
+        /*
+        Cursor cur = database.query(MySqlHelper.TABLE_SYSTEM_USER, new String[]{
+                        MySqlHelper.SYSTEM_USER_COLUMN_ID, MySqlHelper.SYSTEM_USER_COLUMN_NAME, MySqlHelper.SYSTEM_USER_COLUMN_PASS},
+                MySqlHelper.SYSTEM_USER_COLUMN_NAME + "=?",
+                new String[]{String.valueOf(user.get_name())}, null, null, null, null);
+        */
+        // code to test if the above code is even working...
+        String selectQuery = "SELECT * FROM " + MySqlHelper.TABLE_SYSTEM_USER;
+        Cursor cur = database.rawQuery(selectQuery, null);
+        /* Only need this code to compare to above query
+        if (cur2 != null && cur2.getCount() > 0) {
+            cur2.moveToFirst();
+            cur2.moveToFirst();
+            Log.e("cur 2 Total Rows: ", cur2.getCount() + "");
 
+            Log.e("cur 2", "cur values: " + cur2.getInt(0) + ";" + cur2.getString(1) + ";" + cur2.getString(2));
+            cur2.close();
+        } else {
+            Log.e("ValidateLogin", "cur 2 is null or 0");
+        }
+        */
 
+        Log.d("validateLogin()b: ", user.get_name() + " " + user.get_password());
+        SystemUser existingUser = null;
+        if (cur != null && cur.getCount() > 0) {
+            cur.moveToFirst();
+            Log.d("Total Rows: ", cur.getCount() + "");
+            Log.d("validateLogin()c: ", user.get_name() + " " + user.get_password());
+            existingUser = new SystemUser(cur.getInt(0), cur.getString(1), cur.getString(2));
+            cur.close();
+            Log.d("validateLogin()ccid: ", existingUser.get_id() + " " + existingUser.get_name() + " " + existingUser.get_password());
+            if (user.get_name().equals(existingUser.get_name()) && user.get_password().equals(existingUser.get_password())) {
+                loginSuccessful = true;
+            } else {
+                loginSuccessful = false;
+            }
+        } else {
+            // No user found matching user input
+            Log.w("validateLogin", "Warning - no user on SYSTEM_USER table that matches user input");
+            loginSuccessful = false;
+        }
+        database.close();
+        return loginSuccessful;
+    }
+
+    public void upgradeDb(Context con) {
+        if (database == null || database.isReadOnly()) database = dbHelper.getWritableDatabase();
+        MySqlHelper msql = new MySqlHelper(con);
+        msql.onUpgrade(database, 1, 1);
+        database.close();
+
+    }
 }

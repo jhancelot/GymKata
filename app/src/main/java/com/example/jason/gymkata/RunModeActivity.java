@@ -53,7 +53,8 @@ public class RunModeActivity extends AppCompatActivity {
 
         // POPULATE THE LISTVIEW WIDGET with the LastName and the FirstName out of the Members List
         // this.refreshListData();
-        memberList = dataHelper.getAllMembers();
+        memberList = dataHelper.getAllMembers(RunModeActivity.this);
+        dataHelper.close();
         lvMembers = (ListView) findViewById(R.id.lvMembers);
         adapter = new ArrayAdapter<Member>(this, android.R.layout.simple_list_item_1, memberList);
         lvMembers.setAdapter(adapter);

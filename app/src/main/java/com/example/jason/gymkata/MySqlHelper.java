@@ -1,5 +1,6 @@
 package com.example.jason.gymkata;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -22,6 +23,19 @@ public class MySqlHelper extends SQLiteOpenHelper {
 
     // Here's a public constant for dates:
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
+    // SYSTEMUSER TABLE
+    public static final String SYSTEM_USER_COLUMN_ID = "_id";
+    public static final String SYSTEM_USER_COLUMN_NAME = "Name";
+    public static final String SYSTEM_USER_COLUMN_PASS = "Password";
+    public static final String TABLE_SYSTEM_USER = "SystemUser";
+    public static final String SYSTEM_USER_TABLE_CREATE = "CREATE TABLE " + TABLE_SYSTEM_USER
+            + " (" + SYSTEM_USER_COLUMN_ID + " integer primary key autoincrement, "
+            + SYSTEM_USER_COLUMN_NAME + " text not null, "
+            + SYSTEM_USER_COLUMN_PASS + " text not null);";
+    public static final String DEFAULT_USER_NAME = "cbc@uniserve.com";
+    public static final String DEFAULT_USER_PASSWORD = "pass123";
+
     // MEMBER TABLE
     public static final String TABLE_MEMBER = "Member";
     public static final String MEMBER_COLUMN_ID = "_id";
@@ -81,16 +95,25 @@ public class MySqlHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.w(MySqlHelper.class.getName(), "Creating table " + TABLE_SYSTEM_USER);
+        Log.i(MySqlHelper.class.getName(), "Sql syntax: " + SYSTEM_USER_TABLE_CREATE);
+        db.execSQL(SYSTEM_USER_TABLE_CREATE);
+        // Pre-populate the SYSTEM_USER table with a single admin user
+        ContentValues values = new ContentValues();
+        values.put(SYSTEM_USER_COLUMN_NAME, DEFAULT_USER_NAME);
+        values.put(SYSTEM_USER_COLUMN_PASS, DEFAULT_USER_PASSWORD);
+        db.insert(TABLE_SYSTEM_USER, null, values);
+
         Log.w(MySqlHelper.class.getName(), "Creating table " + TABLE_MEMBER);
-        Log.e(MySqlHelper.class.getName(), "Sql syntax: " + MEMBER_TABLE_CREATE);
+        Log.i(MySqlHelper.class.getName(), "Sql syntax: " + MEMBER_TABLE_CREATE);
         db.execSQL(MEMBER_TABLE_CREATE);
 
         Log.w(MySqlHelper.class.getName(), "Creating table " + TABLE_BELT);
-        Log.e(MySqlHelper.class.getName(), "Sql syntax: " + BELT_TABLE_CREATE);
+        Log.i(MySqlHelper.class.getName(), "Sql syntax: " + BELT_TABLE_CREATE);
         db.execSQL(BELT_TABLE_CREATE);
 
         Log.w(MySqlHelper.class.getName(), "Creating table " + TABLE_ATTENDANCE);
-        Log.e(MySqlHelper.class.getName(), "Sql syntax: " + ATTEND_TABLE_CREATE);
+        Log.i(MySqlHelper.class.getName(), "Sql syntax: " + ATTEND_TABLE_CREATE);
         db.execSQL(ATTEND_TABLE_CREATE);
 
     }
@@ -99,6 +122,7 @@ public class MySqlHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.w(MySqlHelper.class.getName(), "Upgrading database from version " + oldVersion
                 + " to " + newVersion + ".");
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SYSTEM_USER);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEMBER);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BELT);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ATTENDANCE);

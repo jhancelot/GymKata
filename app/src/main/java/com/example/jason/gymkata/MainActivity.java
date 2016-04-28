@@ -30,12 +30,13 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
-    private DataHelper dataHelper;
+    //private DataHelper dataHelper;
     ListView lvMembers;
     List<Member> memberList;
     // may not need this one anymore...
     List<String> namesList;
     ArrayAdapter<Member> adapter;
+    int currentPosition = 0;
     SearchView svFilter;
     Member currentMember;
     Menu mainMenu;
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity
 
         // LIST VIEW
         // OPEN THE DATABASE
-        dataHelper = new DataHelper(this);
+        DataHelper dataHelper = new DataHelper(this);
         try {
             dataHelper.open();
             Log.w(MainActivity.class.getName(), "Database successfully opened ");
@@ -61,7 +62,8 @@ public class MainActivity extends AppCompatActivity
 
         // POPULATE THE LISTVIEW WIDGET with the LastName and the FirstName out of the Members List
        // this.refreshListData();
-        memberList = dataHelper.getAllMembers();
+        memberList = dataHelper.getAllMembers(this);
+        dataHelper.close();
         lvMembers = (ListView) findViewById(R.id.lvMembers);
         adapter = new ArrayAdapter<Member>(this, android.R.layout.simple_list_item_1, memberList);
         lvMembers.setAdapter(adapter);
@@ -73,11 +75,12 @@ public class MainActivity extends AppCompatActivity
 
                 //svFilter.setText(adapterView.getItemAtPosition(position) + "");
                 currentMember = (Member) adapterView.getItemAtPosition(position);
+                currentPosition = position;
                 Log.e(MainActivity.class.getName(),
                         "position=" + position
                                 + " and id=" + id
                                 + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
-                Log.e("setOnItem...", "lvMembers.getSelectedItem(): " + lvMembers.getSelectedItem());
+                Log.e("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
 
 
 
@@ -147,11 +150,22 @@ public class MainActivity extends AppCompatActivity
 
     private void refreshListData() {
         Log.e("refreshListData()", "refreshing list data...");
-        memberList = dataHelper.getAllMembers();
+        DataHelper dataHelper = new DataHelper(this);
+        try {
+            dataHelper.open();
+            Log.w(MainActivity.class.getName(), "Database successfully opened ");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+        }
+        memberList = dataHelper.getAllMembers(MainActivity.this);
+        dataHelper.close();
         namesList = new ArrayList<String>();
         for (Member m : memberList) {
             namesList.add(m.getLastName() + ", " + m.getFirstName());
+            adapter.add(m);
         }
+        adapter.notifyDataSetChanged();
     }
 
 
@@ -191,6 +205,24 @@ public class MainActivity extends AppCompatActivity
 
             mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
             Log.e("onOption", "SAVE selected");
+        }
+
+        if (id == R.id.action_delete) {
+            Log.i("onOption", "DELETE selected");
+            try {
+                //adapter = new ArrayAdapter<Member>(this, android.R.layout.simple_list_item_1, memberList);
+                if (adapter.getCount() > 0 && adapter.getPosition(currentMember) > 0) {
+                    currentMember.delete(MainActivity.this);
+                    adapter.remove(currentMember);
+
+                    adapter.notifyDataSetChanged();
+                }
+
+                // SHOULD WE BE DELETING THE ASSOCIATED ATTENDANCE RECORDS AS WELL?
+            } catch (Exception e) {
+                Log.e("onOptionSel", "Error deleting member: " + e.toString());
+                e.printStackTrace();
+            }
         }
         return super.onOptionsItemSelected(item);
     }
@@ -241,8 +273,8 @@ public class MainActivity extends AppCompatActivity
     public void onClick(View v) {
         //ArrayAdapter<Member> adapter = (ArrayAdapter<Member>) lvMembers.getAdapter();
         // OPEN THE DATABASE
-        /*
-        dataHelper = new DataHelper(this);
+
+        DataHelper dataHelper = new DataHelper(this);
         try {
             dataHelper.open();
             Log.w(MainActivity.class.getName(), "Database successfully opened ");
@@ -250,22 +282,22 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
             Log.e(MainActivity.class.getName(), "Error opening database: " + e);
         }
-*/
+
         // check which widget was clicked
         switch (v.getId()) {
             case R.id.buttGenerate:
                 Log.e("MainActivity.onClick", "Generating member rows...");
 
-                dataHelper.generateSampleData();
-               // this.refreshListData();
-                memberList = dataHelper.getAllMembers();
-                adapter.notifyDataSetChanged();
-                lvMembers.invalidate();
-                lvMembers.setAdapter(adapter);
+                dataHelper.generateSampleData(MainActivity.this);
+                this.refreshListData();
+                //memberList = dataHelper.getAllMembers(MainActivity.this);
+                //adapter.notifyDataSetChanged();
+               //lvMembers.invalidate();
+                //lvMembers.setAdapter(adapter);
                 break;
             case R.id.buttList:
                 Log.e("MainActivity.onClick: ", "Listing all rows...");
-                dataHelper.listMembersToLog();
+                dataHelper.listMembersToLog(MainActivity.this);
                 dataHelper.listAttendanceToLog();
             //    adapter.notifyDataSetChanged();
             //    lvMembers.invalidate();
@@ -275,7 +307,7 @@ public class MainActivity extends AppCompatActivity
                 Log.e("MainActivity.onClick: ", "Deleting all rows...");
                 try {
                     dataHelper.deleteAllMembers();
-                    memberList = dataHelper.getAllMembers();
+                    memberList = dataHelper.getAllMembers(MainActivity.this);
                 //    this.refreshListData();
 
                     adapter.notifyDataSetChanged();
@@ -326,7 +358,7 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-      //  dataHelper.close();
+        //if (dataHelper != null) dataHelper.close();
 
     }
     private void msg(String msg, View view, String buttonType) {

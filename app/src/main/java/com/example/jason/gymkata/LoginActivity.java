@@ -19,6 +19,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -321,21 +322,34 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             try {
                 // Simulate network access.
+                Log.i("doInBackground", "simulating network access");
                 Thread.sleep(2000);
+                SystemUser sysUser = new SystemUser(0, mEmail, mPassword);
+
+                DataHelper db = new DataHelper(LoginActivity.this);
+                // YOU ONLY NEED THIS TO REBUILD THE DATABASE OCCASIONALLY
+                //db.upgradeDb(LoginActivity.this);
+
+                boolean b = db.validateLogin(sysUser);
+                Log.e("boolean: ", "" + b);
+                if (b) return true;
+                else return false;
             } catch (InterruptedException e) {
                 return false;
             }
-
+            /*
+            Log.i("doInBackground", "DUMMY: " + DUMMY_CREDENTIALS);
             for (String credential : DUMMY_CREDENTIALS) {
                 String[] pieces = credential.split(":");
+                Log.i("doInBackground", "pieces[0]: " + pieces[0] + " ;mEmail: " + mEmail + "; mPass: " + mPassword);
                 if (pieces[0].equals(mEmail)) {
                     // Account exists, return true if the password matches.
                     return pieces[1].equals(mPassword);
                 }
             }
-
+            */
             // TODO: register the new account here.
-            return true;
+          //  return true;
         }
 
         @Override
