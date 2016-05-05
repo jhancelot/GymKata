@@ -7,7 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -112,28 +115,30 @@ public class DataHelper {
         // this line is only necessary because we're calling local methods without instantiating
         // this class first (which is where the context is normally passed in)
         if (dbHelper == null) dbHelper = new MySqlHelper(context);
-
+        DateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+        String curDate = dateFormat.format(new Date());
         long memberId = -1;
         Member mem = new Member("Allan", "ADAMS", "WHITE");
-        mem.setMemberSince(System.currentTimeMillis());
+
+        mem.setMemberSince(curDate);
         //mem.setId(this.createMember(mem));
         memberId = -1;
         memberId = this.createMember(mem);
-        Attendance attend = new Attendance(mem.getMemberSince(), memberId);
+        Attendance attend = new Attendance(memberId, mem.getMemberSince());
         this.createAttend(attend);
 
         memberId = -1;
         mem = new Member("Beatrice", "BONNER", "YELLOW");
-        mem.setMemberSince(System.currentTimeMillis());
+        mem.setMemberSince(curDate);
         memberId = this.createMember(mem);
-        attend = new Attendance(mem.getMemberSince(), memberId);
+        attend = new Attendance(memberId, mem.getMemberSince());
         this.createAttend(attend);
 
         memberId = -1;
         mem = new Member("Charles", "CARSON", "PURPLE");
-        mem.setMemberSince(System.currentTimeMillis());
+        mem.setMemberSince(curDate);
         memberId = this.createMember(mem);
-        attend = new Attendance(mem.getMemberSince(), memberId);
+        attend = new Attendance(memberId, mem.getMemberSince());
         this.createAttend(attend);
 
         //dbHelper = null;
@@ -260,7 +265,7 @@ public class DataHelper {
             mem.setPhoneNumber(cur.getString(4));
             mem.setEmail(cur.getString(5));
             mem.setBeltLevel(cur.getString(6));
-            mem.setMemberSince(cur.getLong(7));
+            mem.setMemberSince(cur.getString(7));
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error setting values in cursorToMember: " + e.toString());
         }
@@ -272,7 +277,7 @@ public class DataHelper {
         Attendance attend = new Attendance();
         try {
             attend.setId(cur.getLong(0));
-            attend.setAttendDate(cur.getLong(1));
+            attend.setAttendDate(cur.getString(1));
             attend.setMemberId(cur.getLong(2));
 
         } catch (Exception e) {
@@ -290,7 +295,8 @@ public class DataHelper {
             do {
                 Log.e("DataHelper.listAttend", "ID:" + cur.getString(0)
                         + "; Date: " + cur.getLong(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE))
-                        + "; Formatted Date: " + MySqlHelper.getFormattedDate(cur.getLong(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE)))
+                                + "; Formatted Date: " + MySqlHelper.getFormattedDate(cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE)))
+                    //    + "; Formatted Date: " + MySqlHelper.getFormattedDate(cur.getLong(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE)))
                         + "; MBR ID: " + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_MEMBER_ID))
                 );
 

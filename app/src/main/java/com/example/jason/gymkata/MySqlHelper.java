@@ -22,7 +22,8 @@ public class MySqlHelper extends SQLiteOpenHelper {
     }
 
     // Here's a public constant for dates:
-    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    //public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
 
     // SYSTEMUSER TABLE
     public static final String SYSTEM_USER_COLUMN_ID = "_id";
@@ -52,11 +53,11 @@ public class MySqlHelper extends SQLiteOpenHelper {
             + " integer primary key autoincrement, "
             + MEMBER_COLUMN_FIRSTNAME + " text not null,"
             + MEMBER_COLUMN_LASTNAME + " text not null,"
-            + MEMBER_COLUMN_DOB + " DATETIME,"
+            + MEMBER_COLUMN_DOB + " text,"
             + MEMBER_COLUMN_EMAIL + " text,"
             + MEMBER_COLUMN_PHONE + " text,"
             + MEMBER_COLUMN_BELT_LEVEL + " text,"
-            + MEMBER_MEMBERSINCE + " DATETIME);";
+            + MEMBER_MEMBERSINCE + " text);";
 
     // BELT LEVEL TABLE
     public static final String TABLE_BELT = "BeltLevel";
@@ -79,18 +80,19 @@ public class MySqlHelper extends SQLiteOpenHelper {
     private static final String ATTEND_TABLE_CREATE = "create table "
             + TABLE_ATTENDANCE + "(" + ATTEND_COLUMN_ID
             + " integer primary key autoincrement, "
-            + ATTEND_COLUMN_ATTEND_DATE + " DATETIME,"
+            + ATTEND_COLUMN_ATTEND_DATE + " text,"
             + ATTEND_COLUMN_MEMBER_ID + " text not null);";
 
     public static final String[] ATTEND_COLS = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
 
-    public static String getFormattedDate(long date) {
+    public static String getFormattedDate(String date) {
         DateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
 
         // Create a calendar object that will convert the date and time value in milliseconds to date.
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(date);
-        return formatter.format(calendar.getTime());
+       //calendar.setTimeInMillis(date);
+       //return formatter.format(calendar.getTime());
+        return date;
     }
 
     @Override

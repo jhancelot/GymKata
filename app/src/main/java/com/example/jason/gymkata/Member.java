@@ -18,7 +18,7 @@ public class Member {
     private String phoneNumber;
     private String email;
     private String beltLevel;
-    private long memberSince;
+    private String memberSince;
 
     public Member() {
     }
@@ -27,7 +27,7 @@ public class Member {
         this.firstName = firstName;
         this.lastName = lastName;
         this.beltLevel = beltLevel;
-        this.memberSince = System.currentTimeMillis();
+        //this.memberSince = System.currentTimeMillis();
     }
 
     // This is apparently necessary to have the listView present the data properly
@@ -96,9 +96,9 @@ public class Member {
         this.beltLevel = beltLevel;
     }
     
-    public long getMemberSince() { return memberSince;}
+    public String getMemberSince() { return memberSince;}
 
-    public void setMemberSince(long memSince) {this.memberSince = memSince;}
+    public void setMemberSince(String memSince) {this.memberSince = memSince;}
 
     public long createMember(Context context) throws Exception {
         long insertId = -1;

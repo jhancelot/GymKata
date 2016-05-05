@@ -1,16 +1,15 @@
 package com.example.jason.gymkata;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ import java.util.List;
 public class Attendance {
 
     private long id;
-    private long attendDate;
+    private String attendDate;
     private long memberId;
 
     private SQLiteDatabase database;
@@ -33,7 +32,7 @@ public class Attendance {
         this.memberId = memberId;
     }
 
-    public Attendance(long memberId, long attendDate) {
+    public Attendance(long memberId, String attendDate) {
         this.attendDate = attendDate;
         this.memberId = memberId;
     }
@@ -46,12 +45,12 @@ public class Attendance {
         this.id = id;
     }
 
-    public long getAttendDate() {
+    public String getAttendDate() {
 
-        return ((attendDate > 0)?attendDate:System.currentTimeMillis());
+        return attendDate;
     }
 
-    public void setAttendDate(long attendDate) {
+    public void setAttendDate(String attendDate) {
         this.attendDate = attendDate;
     }
 
@@ -60,9 +59,9 @@ public class Attendance {
         DateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
 
         // Create a calendar object that will convert the date and time value in milliseconds to date.
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(this.attendDate);
-        return formatter.format(calendar.getTime());
+        //Calendar calendar = Calendar.getInstance();
+        //calendar.setTimeInMillis(this.attendDate);
+        return this.attendDate;
     }
 
     public long getMemberId() {
@@ -136,7 +135,7 @@ public class Attendance {
         Attendance att = new Attendance();
         try {
             att.setId(cur.getLong(0));
-            att.setAttendDate(cur.getLong(1));
+            att.setAttendDate(cur.getString(1));
             att.setId(cur.getLong(2));
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error setting values in cursorToAttendance: " + e.toString());

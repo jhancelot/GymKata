@@ -13,7 +13,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 
 /**
@@ -109,13 +112,8 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     @Override
     public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
         Log.i("DatePickFrag", "onDateSet Fired");
-   //     BirthDateFragment targetFragment = (BirthDateFragment) getTargetFragment();
-        if (year < 0) {
-          //  targetFragment.mBirthday = null;
-        } else {
-        //    targetFragment.mBirthday = Calendar.getInstance();
-        //    targetFragment.mBirthday.set(year, monthOfYear, dayOfMonth);
-        }
+
+
     }
 
     /**

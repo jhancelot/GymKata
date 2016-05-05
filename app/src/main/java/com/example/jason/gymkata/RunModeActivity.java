@@ -17,6 +17,9 @@ import android.widget.ListView;
 import android.widget.SearchView;
 
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 public class RunModeActivity extends AppCompatActivity {
@@ -120,9 +123,11 @@ public class RunModeActivity extends AppCompatActivity {
                     Log.w("TESTING", "att.getmemid: " + att.getMemberId());
                     Log.w("TESTING", "att.getDAte: " + att.getAttendDate());
                     att.setMemberId(currentMember.getId());
-                    att.setAttendDate(System.currentTimeMillis());
+                    //att.setAttendDate(System.currentTimeMillis());
+                    DateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+                    att.setAttendDate(dateFormat.format(new Date()));
                     Log.w("TESTING2", "att.getmemid: " + att.getMemberId());
-                    Log.w("TESTING2", "att.getDAte: " + att.getAttendDate());
+                    Log.w("TESTING2", "att.getDate: " + att.getAttendDate());
                     try {
                         long attendId = -1;
                         attendId = att.createAttend(RunModeActivity.this);

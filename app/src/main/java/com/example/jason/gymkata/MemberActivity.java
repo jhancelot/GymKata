@@ -1,9 +1,12 @@
 package com.example.jason.gymkata;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -17,8 +20,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class MemberActivity extends AppCompatActivity implements View.OnClickListener {
@@ -36,7 +42,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private EditText mEmail;
     private EditText mPhone;
    // private String mBeltLevel;
- //   private long mMemberSince;
+    private static EditText mMemberSince;
 
     private final static int READ_ONLY = 0;
     private final static int READ_WRITE = 1;
@@ -52,7 +58,8 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mEmail = (EditText) findViewById(R.id.etEmail);
         mPhone = (EditText) findViewById(R.id.etPhone);
         // Date Picker Fragment
-
+        mMemberSince = (EditText) findViewById(R.id.etMemberSince);
+        mMemberSince.setOnClickListener(this);
 
         // TOOL BAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -194,6 +201,11 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 Log.e("MainActivity.onClick: ", "DELETE MEMBER CLICKED");
 
                 break;
+            case R.id.etMemberSince:
+                Log.e("MainActivity.onClick: ", "MEMBER SINCE CLICKED");
+                DialogFragment newFragment = new DatePickerFragment();
+                newFragment.show(getSupportFragmentManager(), "datePicker");
+                break;
             case R.id.fab:
                 Log.e("MainActivity.onClick: ", "FLOATING ACTION BAR CLICKED");
                 Snackbar.make(v, "FLOATING ACTION BAR CLICKED", Snackbar.LENGTH_LONG)
@@ -213,6 +225,40 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         //  dataHelper.close();
 
     }
+    public static class DatePickerFragment extends DialogFragment
+            implements DatePickerDialog.OnDateSetListener {
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current date as the default date in the picker
+            final Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
+            // Create a new instance of DatePickerDialog and return it
+            return new DatePickerDialog(getActivity(), this, year, month, day);
+        }
+
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+            Log.i("DatePickFrag", "onDateSet Fired");
+            try {
+                String datestring = year + "-" + monthOfYear + "-" + dayOfMonth;
+                SimpleDateFormat sd = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+                //adding one to the month
+                datestring = year + "-" + String.format("%02d",(++monthOfYear)) + "-" + String.format("%02d",dayOfMonth);
+                Log.i("datestring", "datestring: " + datestring);
+                Date dd = sd.parse(datestring);
+                Log.i("dd", "dd: " + dd);
+                // Update MemberSince
+                mMemberSince.setText(datestring);
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void msgBox(String msg, View view) {
         Log.e("MemberActivity", msg);
         Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
