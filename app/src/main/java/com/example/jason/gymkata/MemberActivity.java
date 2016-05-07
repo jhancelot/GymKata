@@ -2,6 +2,7 @@ package com.example.jason.gymkata;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
@@ -36,6 +38,10 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private Calendar cal;
     private Menu mainMenu;
 
+    ArrayAdapter<String> adapter;
+
+    private long currentMemberId;
+    private EditText mId;
     private EditText mLastName;
     private EditText mFirstName;
 //    private long mDob;
@@ -43,9 +49,18 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private EditText mPhone;
    // private String mBeltLevel;
     private static EditText mMemberSince;
+    private static ImageButton mMemberSinceCalendar;
 
-    private final static int READ_ONLY = 0;
-    private final static int READ_WRITE = 1;
+    private static EditText mDob;
+    private static ImageButton mDobCalendar;
+
+    private static final int DIALOG_MEMBERSINCE = 0;
+    private static final int DIALOG_DOB = 1;
+    private static int dialogType = DIALOG_DOB;
+
+    public final static int READ_ONLY = 0;
+    public final static int READ_WRITE = 1;
+    public final static int EDIT_NEW = 2;
     private int editMode = READ_ONLY;
 
     @Override
@@ -53,13 +68,20 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_member);
 
+        mId = (EditText) findViewById(R.id.etId);
         mFirstName = (EditText) findViewById(R.id.etFirstName);
         mLastName = (EditText) findViewById(R.id.etLastName);
         mEmail = (EditText) findViewById(R.id.etEmail);
         mPhone = (EditText) findViewById(R.id.etPhone);
-        // Date Picker Fragment
+        // Date Picker Fragment for Member Since
         mMemberSince = (EditText) findViewById(R.id.etMemberSince);
-        mMemberSince.setOnClickListener(this);
+        mMemberSinceCalendar = (ImageButton) findViewById(R.id.buttMemberSinceCalendar);
+        mMemberSinceCalendar.setOnClickListener(this);
+
+        // Date Picker Fragment for DOB
+        mDob = (EditText) findViewById(R.id.etDOB);
+        mDobCalendar = (ImageButton) findViewById(R.id.buttDobCalendar);
+        mDobCalendar.setOnClickListener(this);
 
         // TOOL BAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -70,7 +92,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         beltImages = getResources().obtainTypedArray(R.array.belt_images_list);
         image = (ImageView) findViewById(R.id.imageBeltLevel);
         spin = (Spinner) findViewById(R.id.spBeltLevel);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, belts);
+        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, belts);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spin.setAdapter(adapter);
         spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -87,12 +109,45 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             }
         });
 
+        // Populate fields
+        Intent i = getIntent();
+        // CHECK THE VALUE OF EDIT_MODE... IF ITS NULL THEN DEFAULT TO "NEW" MODE
+        editMode = i.getIntExtra("EDIT_MODE", EDIT_NEW);
+        // CHECK THE VALUE OF MEMBER_ID... IF ITS NULL THEN SET TO -1
+        currentMemberId = i.getLongExtra("MEMBER_ID", -1);
+        Log.i("MemberActivity", "editMode=" + editMode);
+        Log.i("MemberActivity", "currentMemberId=" + currentMemberId);
+        if (currentMemberId > -1) {
+            try {
+                DataHelper dataHelper = new DataHelper(MemberActivity.this);
+                dataHelper.open();
+                Member currentMem = dataHelper.getMember(currentMemberId);
+                populateForm(currentMem);
+                Log.w(MainActivity.class.getName(), "Database successfully opened ");
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+            }
 
+        } else { // make sure we're in "new" mode
+            editMode = EDIT_NEW;
+        }
 
         // FLOATING ACTION BAR
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    private void populateForm(Member member) {
+        mId.setText(member.getId()+"");
+        mFirstName.setText(member.getFirstName());
+        mLastName.setText(member.getLastName());
+        mDob.setText(member.getDob());
+        mPhone.setText(member.getPhoneNumber());
+        mEmail.setText(member.getEmail());
+        spin.setSelection(adapter.getPosition(member.getBeltLevel()));
+        mMemberSince.setText(member.getMemberSince());
     }
 
     @Override
@@ -116,6 +171,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             return true;
         }
         if (id == R.id.action_save) {
+            Log.i("onOption", "SAVE selected");
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
             if (editMode == READ_ONLY) {
                 editMode = READ_WRITE;
@@ -130,6 +186,8 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                     Member mem = new Member(mFirstName.getText().toString(), mLastName.getText().toString(), belt);
                     if (mEmail != null && mEmail.getText().toString().length() > 0) mem.setEmail(mEmail.getText().toString());
                     if (mPhone != null && mPhone.getText().toString().length() > 0) mem.setPhoneNumber(mPhone.getText().toString());
+                    if (mDob != null && mDob.getText().toString().length() > 0) mem.setDob(mDob.getText().toString());
+                    if (mMemberSince != null && mMemberSince.getText().toString().length() > 0) mem.setMemberSince(mMemberSince.getText().toString());
                     try {
                         long memberId = -1;
                         memberId = mem.createMember(MemberActivity.this);
@@ -147,7 +205,6 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             }
 
 
-            Log.i("onOption", "SAVE selected");
         } else if (id == R.id.action_delete) {
             Log.i("onOption", "DELETE selected");
         }
@@ -201,10 +258,17 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 Log.e("MainActivity.onClick: ", "DELETE MEMBER CLICKED");
 
                 break;
-            case R.id.etMemberSince:
+            case R.id.buttDobCalendar:
+                Log.e("MainActivity.onClick: ", "DOB Calendar CLICKED");
+                DialogFragment dobFragment = new DatePickerFragment();
+                dialogType = DIALOG_DOB;
+                dobFragment.show(getSupportFragmentManager(), "datePicker");
+                break;
+            case R.id.buttMemberSinceCalendar:
                 Log.e("MainActivity.onClick: ", "MEMBER SINCE CLICKED");
-                DialogFragment newFragment = new DatePickerFragment();
-                newFragment.show(getSupportFragmentManager(), "datePicker");
+                DialogFragment msFragment = new DatePickerFragment();
+                dialogType = DIALOG_MEMBERSINCE;
+                msFragment.show(getSupportFragmentManager(), "datePicker");
                 break;
             case R.id.fab:
                 Log.e("MainActivity.onClick: ", "FLOATING ACTION BAR CLICKED");
@@ -235,6 +299,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             int year = c.get(Calendar.YEAR);
             int month = c.get(Calendar.MONTH);
             int day = c.get(Calendar.DAY_OF_MONTH);
+
             // Create a new instance of DatePickerDialog and return it
             return new DatePickerDialog(getActivity(), this, year, month, day);
         }
@@ -243,15 +308,22 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
 
             Log.i("DatePickFrag", "onDateSet Fired");
             try {
-                String datestring = year + "-" + monthOfYear + "-" + dayOfMonth;
-                SimpleDateFormat sd = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+                //Member mem = new Member();
                 //adding one to the month
-                datestring = year + "-" + String.format("%02d",(++monthOfYear)) + "-" + String.format("%02d",dayOfMonth);
+               // mem.setMemberSince(year + String.format("%02d",(++monthOfYear)) + String.format("%02d",dayOfMonth));
+                Log.i("onDateSet", "year=" + year + "; month=" + monthOfYear + "; day=" + dayOfMonth);
+                String datestring = year + String.format("%02d",(++monthOfYear)) + String.format("%02d",dayOfMonth);
+                SimpleDateFormat sd = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT);
+                //datestring = year + "-" + String.format("%02d",(++monthOfYear)) + "-" + String.format("%02d",dayOfMonth);
                 Log.i("datestring", "datestring: " + datestring);
                 Date dd = sd.parse(datestring);
                 Log.i("dd", "dd: " + dd);
-                // Update MemberSince
-                mMemberSince.setText(datestring);
+                // Update MemberSince OR DOB
+                if (dialogType == DIALOG_MEMBERSINCE) {
+                    mMemberSince.setText(MySqlHelper.getFormattedDate(datestring));
+                } else {
+                    mDob.setText(MySqlHelper.getFormattedDate(datestring));
+                }
 
             } catch (ParseException e) {
                 e.printStackTrace();

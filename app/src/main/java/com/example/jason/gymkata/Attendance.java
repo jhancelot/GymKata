@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Jason on 2016-04-02.
@@ -54,14 +55,16 @@ public class Attendance {
         this.attendDate = attendDate;
     }
 
-    public String getFormattedDate() {
-        // Create a DateFormatter object for displaying date in specified format.
-        DateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+    public String getFormattedAttendDate() {
+        // use this code if you switch your dates to "long" data type and milliseconds
+        //SimpleDateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_DISPLAY_FORMAT, Locale.getDefault());
+        //Calendar cal = Calendar.getInstance();
+        //cal.setTimeInMillis(this.attendDate);
+       //return dateFormat.format(cal.getTime());
+        SimpleDateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_DISPLAY_FORMAT, Locale.getDefault());
+        Date d = new Date(this.attendDate);
+        return dateFormat.format(d);
 
-        // Create a calendar object that will convert the date and time value in milliseconds to date.
-        //Calendar calendar = Calendar.getInstance();
-        //calendar.setTimeInMillis(this.attendDate);
-        return this.attendDate;
     }
 
     public long getMemberId() {
@@ -102,7 +105,7 @@ public class Attendance {
         Log.e("Attend.createAttend",
                 "ID:" + this.getId()
                         + "; Date: " + this.getAttendDate()
-                        + "; formatteddate: " + this.getFormattedDate()
+                        + "; formatteddate: " + this.getFormattedAttendDate()
                         + "; Member ID: " + this.getMemberId());
         DataHelper dataHelper = new DataHelper(context);
 

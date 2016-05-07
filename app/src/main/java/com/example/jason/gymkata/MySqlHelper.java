@@ -22,8 +22,10 @@ public class MySqlHelper extends SQLiteOpenHelper {
     }
 
     // Here's a public constant for dates:
-    //public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    public static final String DATE_FORMAT = "yyyy-MM-dd";
+    //public static final String DATE_DISPLAY_FORMAT = "yyyy-MM-dd HH:mm:ss";
+    public static final String DATE_DISPLAY_FORMAT = "yyyy-MM-dd";
+    public static final String DATE_SQL_FORMAT = "yyyyMMdd";
+    public static final String DATE_DELIMITER = "-";
 
     // SYSTEMUSER TABLE
     public static final String SYSTEM_USER_COLUMN_ID = "_id";
@@ -86,13 +88,17 @@ public class MySqlHelper extends SQLiteOpenHelper {
     public static final String[] ATTEND_COLS = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
 
     public static String getFormattedDate(String date) {
-        DateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+        String formattedDate = null;
+        Log.i("getFormattedDate", "date=" + date);
+        Log.i("getFormattedDate", "date.substring(4, 6)=" + date.substring(4, 6));
+        Log.i("getFormattedDate", "date.substring(6, 8)=" + date.substring(6, 8));
+        if (date != null) {
+            formattedDate = date.substring(0, 4) + MySqlHelper.DATE_DELIMITER
+                    + date.substring(4, 6) + MySqlHelper.DATE_DELIMITER
+                    + date.substring(6, 8);
+        }
+        return formattedDate;
 
-        // Create a calendar object that will convert the date and time value in milliseconds to date.
-        Calendar calendar = Calendar.getInstance();
-       //calendar.setTimeInMillis(date);
-       //return formatter.format(calendar.getTime());
-        return date;
     }
 
     @Override

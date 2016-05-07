@@ -1,6 +1,5 @@
 package com.example.jason.gymkata;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -124,7 +123,7 @@ public class RunModeActivity extends AppCompatActivity {
                     Log.w("TESTING", "att.getDAte: " + att.getAttendDate());
                     att.setMemberId(currentMember.getId());
                     //att.setAttendDate(System.currentTimeMillis());
-                    DateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+                    DateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT);
                     att.setAttendDate(dateFormat.format(new Date()));
                     Log.w("TESTING2", "att.getmemid: " + att.getMemberId());
                     Log.w("TESTING2", "att.getDate: " + att.getAttendDate());

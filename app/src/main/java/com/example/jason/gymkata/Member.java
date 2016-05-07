@@ -14,7 +14,7 @@ public class Member {
     private long id = -1;
     private String firstName;
     private String lastName;
-    private long dob;
+    private String dob;
     private String phoneNumber;
     private String email;
     private String beltLevel;
@@ -62,13 +62,14 @@ public class Member {
         this.lastName = lastName;
     }
 
-    public long getDob() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_FORMAT, Locale.getDefault());
-        return dob; //dateFormat.format(dob);
+    public String getDob() {
+        return dob;
+    }
+    public String getFormattedDob() {
+        return MySqlHelper.getFormattedDate(this.dob);
     }
 
-    public void setDob(long dob) {
-
+    public void setDob(String dob) {
         this.dob = dob;
     }
 
@@ -98,7 +99,16 @@ public class Member {
     
     public String getMemberSince() { return memberSince;}
 
+    public String getFormattedMemberSince() {
+        //String formattedDate = this.memberSince.substring(0,3) + MySqlHelper.DATE_DELIMITER
+        //            + this.memberSince.substring(4,5) + MySqlHelper.DATE_DELIMITER
+        //            + this.memberSince.substring(6,7);
+        //return formattedDate;
+        return MySqlHelper.getFormattedDate(this.memberSince);
+
+    }
     public void setMemberSince(String memSince) {this.memberSince = memSince;}
+
 
     public long createMember(Context context) throws Exception {
         long insertId = -1;
@@ -109,7 +119,7 @@ public class Member {
                         + "; Member ID: " + this.getId());
         DataHelper dataHelper = new DataHelper(context);
         dataHelper.open();
-        dataHelper.createMember(this);
+        insertId = dataHelper.createMember(this);
         dataHelper.close();
         return insertId;
     }

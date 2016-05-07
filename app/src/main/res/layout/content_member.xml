@@ -20,9 +20,31 @@
         android:layout_height="wrap_content"
         android:layout_weight="0.16">
 
+        <!--TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"></TableRow-->
         <TableRow
             android:layout_width="match_parent"
-            android:layout_height="match_parent"></TableRow>
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="ID"
+                android:id="@+id/textView0"
+                android:layout_column="4" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:ems="10"
+                android:id="@+id/etId"
+                android:layout_column="6"
+                android:focusable="false"
+                android:textIsSelectable="true" />
+        </TableRow>
 
         <TableRow
             android:layout_width="match_parent"
@@ -42,7 +64,7 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/etFirstName"
-                android:layout_column="5"
+                android:layout_column="6"
                 android:focusable="true"
                 android:textIsSelectable="true" />
         </TableRow>
@@ -65,7 +87,7 @@
                 android:inputType="textPersonName"
                 android:ems="10"
                 android:id="@+id/etLastName"
-                android:layout_column="5"
+                android:layout_column="6"
                  />
         </TableRow>
 
@@ -80,14 +102,20 @@
                 android:text="Date of Birth"
                 android:id="@+id/textView4"
                 android:layout_column="4" />
-
+            <ImageButton
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/buttDobCalendar"
+                android:layout_column="5"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_button_calendar" />
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:inputType="date"
                 android:ems="10"
                 android:id="@+id/etDOB"
-                android:layout_column="5" />
+                android:layout_column="6" />
         </TableRow>
 
         <TableRow
@@ -108,7 +136,7 @@
                 android:inputType="textEmailAddress"
                 android:ems="10"
                 android:id="@+id/etEmail"
-                android:layout_column="5" />
+                android:layout_column="6" />
         </TableRow>
 
         <TableRow
@@ -129,7 +157,7 @@
                 android:inputType="phone"
                 android:ems="10"
                 android:id="@+id/etPhone"
-                android:layout_column="5" />
+                android:layout_column="6" />
         </TableRow>
 
         <TableRow
@@ -156,7 +184,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/spBeltLevel"
-                android:layout_column="5" />
+                android:layout_column="6" />
         </TableRow>
         <TableRow
             android:layout_width="match_parent"
@@ -170,12 +198,20 @@
                 android:id="@+id/textView8"
                 android:layout_column="4" />
 
+            <ImageButton
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/buttMemberSinceCalendar"
+                android:layout_column="5"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_button_calendar" />
+
             <EditText
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:id="@+id/etMemberSince"
-                android:layout_column="5" />
+                android:layout_column="6" />
         </TableRow>
         <TableRow
             android:layout_width="match_parent"

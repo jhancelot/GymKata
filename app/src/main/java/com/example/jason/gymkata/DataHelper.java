@@ -115,7 +115,7 @@ public class DataHelper {
         // this line is only necessary because we're calling local methods without instantiating
         // this class first (which is where the context is normally passed in)
         if (dbHelper == null) dbHelper = new MySqlHelper(context);
-        DateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_FORMAT);
+        DateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT);
         String curDate = dateFormat.format(new Date());
         long memberId = -1;
         Member mem = new Member("Allan", "ADAMS", "WHITE");
@@ -244,6 +244,9 @@ public class DataHelper {
                 Log.e("DataHelper.listAll", "ID:" + cur.getString(0)
                         + "; First Name: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_FIRSTNAME))
                         + "; Last Name: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_LASTNAME))
+                        + "; Dob: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_DOB))
+                                + "; Phone: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_PHONE))
+                                + "; Email: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_EMAIL))
                         + "; Belt Level: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_BELT_LEVEL))
                         + "; memberSince: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_MEMBERSINCE))
                 );
@@ -255,15 +258,41 @@ public class DataHelper {
 
     }
 
+    public Member getMember(long memberId) {
+        Member mem = new Member();
+        // initialize to -1
+        mem.setId(-1);
+        Log.e("DataHelper.getMember", "getting member...");
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String whereClause = MySqlHelper.MEMBER_COLUMN_ID + " =?";
+        String[] whereArgs = new String[] {(memberId + "")};
+        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, whereClause, whereArgs, null, null, null);
+        if (cur.moveToFirst()) {
+            Log.e("DataHelper.listAll", "ID:" + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_ID))
+                            + "; First Name: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_FIRSTNAME))
+                            + "; Last Name: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_LASTNAME))
+                            + "; Dob: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_DOB))
+                            + "; Phone: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_PHONE))
+                            + "; Email: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_EMAIL))
+                            + "; Belt Level: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_BELT_LEVEL))
+                            + "; memberSince: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_MEMBERSINCE))
+            );
+            mem = cursorToMember(cur);
+
+        }
+        return mem;
+        // db.close();
+
+    }
     private Member cursorToMember(Cursor cur) {
         Member mem = new Member();
         try {
             mem.setId(cur.getLong(0));
             mem.setFirstName(cur.getString(1));
             mem.setLastName(cur.getString(2));
-            mem.setDob(cur.getLong(3));
-            mem.setPhoneNumber(cur.getString(4));
-            mem.setEmail(cur.getString(5));
+            mem.setDob(cur.getString(3));
+            mem.setEmail(cur.getString(4));
+            mem.setPhoneNumber(cur.getString(5));
             mem.setBeltLevel(cur.getString(6));
             mem.setMemberSince(cur.getString(7));
         } catch (Exception e) {
@@ -295,8 +324,7 @@ public class DataHelper {
             do {
                 Log.e("DataHelper.listAttend", "ID:" + cur.getString(0)
                         + "; Date: " + cur.getLong(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE))
-                                + "; Formatted Date: " + MySqlHelper.getFormattedDate(cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE)))
-                    //    + "; Formatted Date: " + MySqlHelper.getFormattedDate(cur.getLong(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE)))
+                                + "; Formatted Date: " + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE))
                         + "; MBR ID: " + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_MEMBER_ID))
                 );
 
@@ -307,21 +335,6 @@ public class DataHelper {
 
     }
 
-    /*
-          Log.e("createAttend",
-                "ID:" + attend.getId()
-                        + "; Date: " + attend.getAttendDate()
-                        + "; Member ID: " + attend.getMemberId());
-        try {
-            if (database == null || database.isReadOnly()) database = dbHelper.getWritableDatabase();
-            insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
-        } catch (Exception e) {
-            Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
-            e.printStackTrace();
-        } finally {
-            this.close();
-        }
-     */
     public boolean validateLogin(SystemUser user) {
         boolean loginSuccessful = false;
         Log.d("validateLogin()a: ", user.get_name() + " " + user.get_password());

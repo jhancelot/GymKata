@@ -82,7 +82,10 @@ public class MainActivity extends AppCompatActivity
                                 + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
                 Log.e("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
 
-
+                Intent i = new Intent(getBaseContext(), MemberActivity.class);
+                i.putExtra("EDIT_MODE", MemberActivity.READ_ONLY);
+                i.putExtra("MEMBER_ID", currentMember.getId());
+                startActivity(i);
 
 
                 // This code removes an entry from the list with a "fade" effect
