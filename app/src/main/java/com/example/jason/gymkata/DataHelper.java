@@ -47,6 +47,10 @@ public class DataHelper {
     public long createMember(Member mem) {
         long insertId = -1;
 
+        // prepare the phone number and the dates by stripping out non-digits
+        mem.setPhoneNumber(mem.getPhoneNumber().replaceAll("^[0-9]",""));
+        mem.setMemberSince(mem.getMemberSince().replaceAll("^[0-9]",""));
+        mem.setDob(mem.getDob().replaceAll("^[0-9]",""));
         ContentValues values = new ContentValues();
         values.put(MySqlHelper.MEMBER_COLUMN_FIRSTNAME, mem.getFirstName());
         values.put(MySqlHelper.MEMBER_COLUMN_LASTNAME, mem.getLastName());
@@ -314,6 +318,49 @@ public class DataHelper {
         }
         return attend;
     }
+
+    public List<Attendance> getAllAttendance(Context context) {
+        // send an invalid memberId which will get them all
+        return getAllAttendance(-1, context);
+
+    }
+
+    public List<Attendance> getAllAttendance(long memberId, Context context) {
+        Log.e("DataHelper.getAttend", "getting member attendance...");
+        List<Attendance> attendanceList = null;
+        MySqlHelper dbHelper = null;
+        SQLiteDatabase db = null;
+        Cursor cur = null;
+
+        try {
+            attendanceList = new ArrayList<Attendance>();
+            dbHelper = new MySqlHelper(context);
+            db = dbHelper.getReadableDatabase();
+            if (memberId != 00 && memberId != -1) {
+                String whereClause = MySqlHelper.ATTEND_COLUMN_MEMBER_ID + " =?";
+                String[] whereArgs = new String[]{(memberId + "")};
+                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, whereClause, whereArgs, null, null, null);
+
+            } else {
+                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, null, null, null, null, null);
+
+            }
+
+            cur.moveToFirst();
+            while (!cur.isAfterLast()) {
+                Attendance att = cursorToAttendance(cur);
+                attendanceList.add(att);
+                cur.moveToNext();
+            }
+            cur.close();
+        } catch (Exception e) {
+            Log.e("getAttend", "Error getting attendance: " + e.toString());
+            e.printStackTrace();
+        }
+        return attendanceList;
+
+    }
+
 
     public void listAttendanceToLog() {
         String selectQuery = "SELECT * FROM " + MySqlHelper.TABLE_ATTENDANCE;

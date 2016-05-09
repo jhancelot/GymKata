@@ -84,55 +84,48 @@ public class Attendance {
     }
 
     public static List<Attendance> getAllAttendance(Context context) {
-        List<Attendance> attendanceList = new ArrayList<Attendance>();
-        MySqlHelper dbHelper = new MySqlHelper(context);
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, null, null, null, null, null);
-        cur.moveToFirst();
-        while (!cur.isAfterLast()) {
-            Attendance att = cursorToAttendance(cur);
-            attendanceList.add(att);
-            cur.moveToNext();
+        // send an invalid memberId which will get them all
+        return getAllAttendance(-1, context);
+
+    }
+
+    public static List<Attendance> getAllAttendance(long memberId, Context context) {
+        Log.e("DataHelper.getAttend", "getting member attendance...");
+        List<Attendance> attendanceList = null;
+        MySqlHelper dbHelper = null;
+        SQLiteDatabase db = null;
+        Cursor cur = null;
+
+        try {
+            attendanceList = new ArrayList<Attendance>();
+            dbHelper = new MySqlHelper(context);
+            db = dbHelper.getReadableDatabase();
+            if (memberId != 00 && memberId != -1) {
+                String whereClause = MySqlHelper.ATTEND_COLUMN_MEMBER_ID + " =?";
+                String[] whereArgs = new String[]{(memberId + "")};
+                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, whereClause, whereArgs, null, null, null);
+
+            } else {
+                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, null, null, null, null, null);
+
+            }
+
+            cur.moveToFirst();
+            while (!cur.isAfterLast()) {
+                Attendance att = cursorToAttendance(cur);
+                attendanceList.add(att);
+                cur.moveToNext();
+            }
+            cur.close();
+        } catch (Exception e) {
+            Log.e("getAttend", "Error getting attendance: " + e.toString());
+            e.printStackTrace();
         }
-        cur.close();
         return attendanceList;
 
     }
 
-    public long createAttend(Context context) throws Exception {
 
-       // long insertId = 0;
-        Log.e("Attend.createAttend",
-                "ID:" + this.getId()
-                        + "; Date: " + this.getAttendDate()
-                        + "; formatteddate: " + this.getFormattedAttendDate()
-                        + "; Member ID: " + this.getMemberId());
-        DataHelper dataHelper = new DataHelper(context);
-
-        return dataHelper.createAttend(this);
-        /*
-        ContentValues values = new ContentValues();
-        values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, this.getAttendDate());
-        values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, this.getMemberId());
-        try {
-            // YOU NEED TO FIGURE OUT HOW TO PASS THE CONTEXT TO THIS CLASS OR MOVE THE SQL STUFF BACK TO DATAHELPER
-          //  dbHelper = new MySqlHelper(context);
-            dbHelper = new MySqlHelper(context);
-            database = dbHelper.getWritableDatabase();
-            insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
-        } catch (Exception e) {
-            Log.e(Attendance.class.getName(), "Error inserting into database: " + e.toString());
-            throw e;
-        }
-        */
-        /*
-        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
-                null, null, null, null);
-        cur.moveToFirst();
-        Attendance newAttend = cursorToAttendance(cur);
-        cur.close();
-        */
-    }
 
     private static Attendance cursorToAttendance(Cursor cur) {
         Attendance att = new Attendance();

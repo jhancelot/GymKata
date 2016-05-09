@@ -82,10 +82,6 @@ public class MainActivity extends AppCompatActivity
                                 + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
                 Log.e("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
 
-                Intent i = new Intent(getBaseContext(), MemberActivity.class);
-                i.putExtra("EDIT_MODE", MemberActivity.READ_ONLY);
-                i.putExtra("MEMBER_ID", currentMember.getId());
-                startActivity(i);
 
 
                 // This code removes an entry from the list with a "fade" effect
@@ -202,31 +198,57 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_admin_login) {
             Log.i("onOption", "Admin Login Selected");
             return true;
-        }
-        if (id == R.id.action_save) {
+        } else if (id == R.id.action_save_or_edit) {
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
 
-            mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
-            Log.e("onOption", "SAVE selected");
-        }
+            //    mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+            Log.i("onOption", "SAVE OR EDIT selected");
+            Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+            Intent i = new Intent(getBaseContext(), MemberActivity.class);
+            i.putExtra("EDIT_MODE", MemberActivity.VIEW_MODE);
+            i.putExtra("MEMBER_ID", currentMember.getId());
+            startActivity(i);
 
-        if (id == R.id.action_delete) {
+        } else if (id == R.id.action_attendance) {
+            Log.i("onOption", "ATTENDANCE selected");
+            try {
+                Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+
+                Intent i = new Intent(getBaseContext(), AttendanceActivity.class);
+                i.putExtra("EDIT_MODE", MemberActivity.VIEW_MODE);
+                i.putExtra("MEMBER_ID", currentMember.getId());
+                startActivity(i);
+            } catch (Exception e) {
+                Log.e("MainActivity.Option", "Error deleting member: " + e.toString());
+                e.printStackTrace();
+            }
+
+        } else if (id == R.id.action_delete) {
             Log.i("onOption", "DELETE selected");
             try {
                 //adapter = new ArrayAdapter<Member>(this, android.R.layout.simple_list_item_1, memberList);
                 if (adapter.getCount() > 0 && adapter.getPosition(currentMember) > 0) {
-                    currentMember.delete(MainActivity.this);
-                    adapter.remove(currentMember);
+                    try {
+                        Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+                        // DELETE CODE HERE
+                        // SHOULD WE BE DELETING THE ASSOCIATED ATTENDANCE RECORDS AS WELL?
+                        //currentMember.delete(MainActivity.this);
+                        adapter.remove(currentMember);
 
-                    adapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
+                    } catch (Exception e) {
+                        Log.e("MainActivity.Option", "Error deleting member: " + e.toString());
+                        e.printStackTrace();
+                    }
                 }
 
-                // SHOULD WE BE DELETING THE ASSOCIATED ATTENDANCE RECORDS AS WELL?
+
             } catch (Exception e) {
                 Log.e("onOptionSel", "Error deleting member: " + e.toString());
                 e.printStackTrace();
             }
         }
+
         return super.onOptionsItemSelected(item);
     }
 

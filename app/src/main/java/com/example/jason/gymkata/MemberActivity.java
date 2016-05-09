@@ -58,10 +58,10 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private static final int DIALOG_DOB = 1;
     private static int dialogType = DIALOG_DOB;
 
-    public final static int READ_ONLY = 0;
-    public final static int READ_WRITE = 1;
+    public final static int VIEW_MODE = 0;
+    public final static int EDIT_EXISTING = 1;
     public final static int EDIT_NEW = 2;
-    private int editMode = READ_ONLY;
+    private int editMode = VIEW_MODE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +123,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 dataHelper.open();
                 Member currentMem = dataHelper.getMember(currentMemberId);
                 populateForm(currentMem);
+                dataHelper.close();
                 Log.w(MainActivity.class.getName(), "Database successfully opened ");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -153,8 +154,14 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.menu_member, menu);
         this.mainMenu = menu;
+        // CHECK EDIT MODE
+        if (editMode == VIEW_MODE) {
+            mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+        } else { // IF IN EDIT MODE THEN DISPLAY THE SAVE BUTTON
+            mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
+        }
         return true;
     }
 
@@ -170,31 +177,43 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             Log.i("onOption", "Admin Login Selected");
             return true;
         }
-        if (id == R.id.action_save) {
-            Log.i("onOption", "SAVE selected");
+        if (id == R.id.action_save_or_edit) {
+            Log.i("onOption", "SAVE OR EDIT selected");
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
-            if (editMode == READ_ONLY) {
-                editMode = READ_WRITE;
-                mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
-            } else {
+            // if in "View" mode, then the pencil is displayed, so switch
+            // to checkbox and enter "Edit" mode
+            if (editMode == VIEW_MODE) {
+                editMode = EDIT_EXISTING;
+                mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
+            } else if (editMode == EDIT_NEW || editMode == EDIT_EXISTING) {
                 // Check form field values
                 String msg = validateForm();
                 if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
                     // Save Member Data
-                    editMode = READ_ONLY;
-                    mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+                    editMode = VIEW_MODE;
+                    mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
                     Member mem = new Member(mFirstName.getText().toString(), mLastName.getText().toString(), belt);
-                    if (mEmail != null && mEmail.getText().toString().length() > 0) mem.setEmail(mEmail.getText().toString());
-                    if (mPhone != null && mPhone.getText().toString().length() > 0) mem.setPhoneNumber(mPhone.getText().toString());
-                    if (mDob != null && mDob.getText().toString().length() > 0) mem.setDob(mDob.getText().toString());
-                    if (mMemberSince != null && mMemberSince.getText().toString().length() > 0) mem.setMemberSince(mMemberSince.getText().toString());
+                    if (mEmail != null && mEmail.getText().toString().length() > 0)
+                        mem.setEmail(mEmail.getText().toString());
+                    if (mPhone != null && mPhone.getText().toString().length() > 0)
+                        mem.setPhoneNumber(mPhone.getText().toString());
+                    if (mDob != null && mDob.getText().toString().length() > 0)
+                        mem.setDob(mDob.getText().toString());
+                    if (mMemberSince != null && mMemberSince.getText().toString().length() > 0)
+                        mem.setMemberSince(mMemberSince.getText().toString());
                     try {
                         long memberId = -1;
-                        memberId = mem.createMember(MemberActivity.this);
-                        if (memberId == -1) throw new Exception("memberId is -1, so something went wrong");
+                        DataHelper dataHelper = new DataHelper(MemberActivity.this);
+                        dataHelper.open();
+                        memberId = dataHelper.createMember(mem);
+                        dataHelper.close();
+
+                        //memberId = mem.createMember(MemberActivity.this);
+                        if (memberId == -1)
+                            throw new Exception("memberId is -1, so something went wrong");
                         msgBox("Saved!", findViewById(android.R.id.content));
                     } catch (Exception e) {
-                        msgBox("Error creating Member Record: " + e.toString(),findViewById(android.R.id.content) );
+                        msgBox("Error creating Member Record: " + e.toString(), findViewById(android.R.id.content));
                         e.printStackTrace();
                     }
 
@@ -202,6 +221,8 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                     // use this syntax to access the current "View"
                     msgBox(msg, findViewById(android.R.id.content));
                 }
+            } else {
+                Log.e("MemberActivity", "Warning unknown editMode: " + editMode);
             }
 
 

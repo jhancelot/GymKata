@@ -129,7 +129,11 @@ public class RunModeActivity extends AppCompatActivity {
                     Log.w("TESTING2", "att.getDate: " + att.getAttendDate());
                     try {
                         long attendId = -1;
-                        attendId = att.createAttend(RunModeActivity.this);
+                        DataHelper dataHelper = new DataHelper(RunModeActivity.this);
+                        dataHelper.open();
+                        attendId = dataHelper.createAttend(att);
+                        dataHelper.close();
+                        //attendId = att.createAttend(RunModeActivity.this);
                         if (attendId == -1) throw new Exception("attendId is -1, so something went wrong");
                         Snackbar.make(view, "Welcome " + currentMember.getFirstName() + " " + currentMember.getLastName() + "!", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();

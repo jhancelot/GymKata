@@ -1,5 +1,6 @@
 package com.example.jason.gymkata;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,6 +22,13 @@ public class AttendanceActivity extends AppCompatActivity {
     ListView listView;
     List<Attendance> attendanceList;
     ArrayAdapter<Attendance> adapter;
+    private long currentMemberId;
+    public final static int VIEW_MODE = 0;
+    public final static int EDIT_EXISTING = 1;
+    public final static int EDIT_NEW = 2;
+    private int editMode = VIEW_MODE;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +54,31 @@ public class AttendanceActivity extends AppCompatActivity {
             }
         });
 
+        // Populate fields
+        Intent i = getIntent();
+        // CHECK THE VALUE OF EDIT_MODE... IF ITS NULL THEN DEFAULT TO "NEW" MODE
+        editMode = i.getIntExtra("EDIT_MODE", EDIT_NEW);
+        // CHECK THE VALUE OF MEMBER_ID... IF ITS NULL THEN SET TO -1
+        currentMemberId = i.getLongExtra("MEMBER_ID", -1);
+        Log.i("MemberActivity", "editMode=" + editMode);
+        Log.i("MemberActivity", "currentMemberId=" + currentMemberId);
+
         // LIST VIEW
         // POPULATE THE LISTVIEW WIDGET
         // this.refreshListData();
-        attendanceList = Attendance.getAllAttendance(this);
+        try {
+            DataHelper dataHelper = new DataHelper(AttendanceActivity.this);
+            dataHelper.open();
+            if (currentMemberId > -1) {
+                attendanceList = dataHelper.getAllAttendance(currentMemberId, AttendanceActivity.this);
+            } else {
+                attendanceList = dataHelper.getAllAttendance(AttendanceActivity.this);
+            }
+            dataHelper.close();
+        } catch (Exception e) {
+            Log.e("AttActivity", "Error getting attendance: " + e.toString());
+            e.printStackTrace();
+        }
         listView = (ListView) findViewById(R.id.lvAttendance);
         adapter = new ArrayAdapter<Attendance>(this, android.R.layout.simple_list_item_1, attendanceList);
         listView.setAdapter(adapter);
