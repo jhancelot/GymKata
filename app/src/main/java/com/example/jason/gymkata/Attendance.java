@@ -80,6 +80,7 @@ public class Attendance {
     // and the list will refresh properly
     @Override
     public String toString() {
+
         return this.getMemberId() + ": " + this.getAttendDate();
     }
 

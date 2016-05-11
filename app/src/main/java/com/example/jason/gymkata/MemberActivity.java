@@ -29,7 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-public class MemberActivity extends AppCompatActivity implements View.OnClickListener {
+public class MemberActivity extends AppCompatActivity implements View.OnClickListener, Constants {
     private Spinner spin;
     private TypedArray beltImages;
     private String[] belts;
@@ -58,10 +58,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private static final int DIALOG_DOB = 1;
     private static int dialogType = DIALOG_DOB;
 
-    public final static int VIEW_MODE = 0;
-    public final static int EDIT_EXISTING = 1;
-    public final static int EDIT_NEW = 2;
-    private int editMode = VIEW_MODE;
+    private int editMode = Constants.VIEW_MODE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,9 +109,9 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         // Populate fields
         Intent i = getIntent();
         // CHECK THE VALUE OF EDIT_MODE... IF ITS NULL THEN DEFAULT TO "NEW" MODE
-        editMode = i.getIntExtra("EDIT_MODE", EDIT_NEW);
+        editMode = i.getIntExtra(EDIT_MODE, EDIT_NEW);
         // CHECK THE VALUE OF MEMBER_ID... IF ITS NULL THEN SET TO -1
-        currentMemberId = i.getLongExtra("MEMBER_ID", -1);
+        currentMemberId = i.getLongExtra(MEMBER_ID, -1);
         Log.i("MemberActivity", "editMode=" + editMode);
         Log.i("MemberActivity", "currentMemberId=" + currentMemberId);
         if (currentMemberId > -1) {
@@ -131,7 +128,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             }
 
         } else { // make sure we're in "new" mode
-            editMode = EDIT_NEW;
+            editMode = Constants.EDIT_NEW;
         }
 
         // FLOATING ACTION BAR
@@ -157,7 +154,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         getMenuInflater().inflate(R.menu.menu_member, menu);
         this.mainMenu = menu;
         // CHECK EDIT MODE
-        if (editMode == VIEW_MODE) {
+        if (editMode == Constants.VIEW_MODE) {
             mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
         } else { // IF IN EDIT MODE THEN DISPLAY THE SAVE BUTTON
             mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
@@ -182,15 +179,15 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
             // if in "View" mode, then the pencil is displayed, so switch
             // to checkbox and enter "Edit" mode
-            if (editMode == VIEW_MODE) {
-                editMode = EDIT_EXISTING;
+            if (editMode == Constants.VIEW_MODE) {
+                editMode = Constants.EDIT_EXISTING;
                 mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
-            } else if (editMode == EDIT_NEW || editMode == EDIT_EXISTING) {
+            } else if (editMode == Constants.EDIT_NEW || editMode == Constants.EDIT_EXISTING) {
                 // Check form field values
                 String msg = validateForm();
                 if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
                     // Save Member Data
-                    editMode = VIEW_MODE;
+                    editMode = Constants.VIEW_MODE;
                     mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
                     Member mem = new Member(mFirstName.getText().toString(), mLastName.getText().toString(), belt);
                     if (mEmail != null && mEmail.getText().toString().length() > 0)

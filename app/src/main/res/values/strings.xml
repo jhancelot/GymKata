@@ -52,7 +52,8 @@
         completions."
     </string>
 
-    <string name="title_activity_attendance">Attendance Activity</string>
+    <string name="title_activity_attendance_list">Attendance List</string>
+    <string name="title_activity_attendance">Attendance Details</string>
     <string name="title_activity_test_date_picker">TestDatePickerActivity</string>
 
     <!-- TODO: Remove or change this placeholder text -->
@@ -68,7 +69,6 @@
     <string name="error_invalid_phone">Phone value is invalid</string>
     <string name="error_invalid_membersince">Member Since value is invalid</string>
     <string name="error_invalid_beltlevel">Belt Level value is invalid</string>
-
 
 
 </resources>

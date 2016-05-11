@@ -42,8 +42,8 @@
                 android:value="com.example.jason.gymkata.MainActivity" />
         </activity>
         <activity
-            android:name=".AttendanceActivity"
-            android:label="@string/title_activity_attendance"
+            android:name=".AttendanceListActivity"
+            android:label="@string/title_activity_attendance_list"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
@@ -62,7 +62,24 @@
         <activity
             android:name=".RunModeActivity"
             android:label="@string/title_activity_run_mode"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <!--activity
+            android:name=".AttendanceActivityOld"
+            android:label="@string/title_activity_attendance"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.jason.gymkata.AttendanceListActivity" />
+        </activity-->
+        <activity
+            android:name=".AttendanceActivity"
+            android:label="@string/title_activity_attendance"
+            android:parentActivityName=".AttendanceListActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.jason.gymkata.AttendanceListActivity" />
+        </activity>
     </application>
 
 </manifest>

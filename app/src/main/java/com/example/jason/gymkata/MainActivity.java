@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
+        implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, Constants {
 
     //private DataHelper dataHelper;
     ListView lvMembers;
@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity
     // may not need this one anymore...
     List<String> namesList;
     ArrayAdapter<Member> adapter;
-    int currentPosition = 0;
+    //int currentPosition = 0;
     SearchView svFilter;
     Member currentMember;
     Menu mainMenu;
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity
 
                 //svFilter.setText(adapterView.getItemAtPosition(position) + "");
                 currentMember = (Member) adapterView.getItemAtPosition(position);
-                currentPosition = position;
+                //currentPosition = position;
                 Log.e(MainActivity.class.getName(),
                         "position=" + position
                                 + " and id=" + id
@@ -205,8 +205,8 @@ public class MainActivity extends AppCompatActivity
             Log.i("onOption", "SAVE OR EDIT selected");
             Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
             Intent i = new Intent(getBaseContext(), MemberActivity.class);
-            i.putExtra("EDIT_MODE", MemberActivity.VIEW_MODE);
-            i.putExtra("MEMBER_ID", currentMember.getId());
+            i.putExtra(EDIT_MODE, VIEW_MODE);
+            i.putExtra(MEMBER_ID, currentMember.getId());
             startActivity(i);
 
         } else if (id == R.id.action_attendance) {
@@ -214,9 +214,9 @@ public class MainActivity extends AppCompatActivity
             try {
                 Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
 
-                Intent i = new Intent(getBaseContext(), AttendanceActivity.class);
-                i.putExtra("EDIT_MODE", MemberActivity.VIEW_MODE);
-                i.putExtra("MEMBER_ID", currentMember.getId());
+                Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
+                i.putExtra(EDIT_MODE, VIEW_MODE);
+                i.putExtra(MEMBER_ID, currentMember.getId());
                 startActivity(i);
             } catch (Exception e) {
                 Log.e("MainActivity.Option", "Error deleting member: " + e.toString());
@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_attendance) {
             Log.i("OnNav","EDIT ATTENDANCE");
-            Intent i = new Intent(getBaseContext(), AttendanceActivity.class);
+            Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
             startActivity(i);
 
         } else if (id == R.id.nav_import) {

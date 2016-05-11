@@ -25,6 +25,7 @@ public class DataHelper {
     private String[] member_cols = {MySqlHelper.MEMBER_COLUMN_ID, MySqlHelper.MEMBER_COLUMN_FIRSTNAME, MySqlHelper.MEMBER_COLUMN_LASTNAME,
        MySqlHelper.MEMBER_COLUMN_DOB, MySqlHelper.MEMBER_COLUMN_EMAIL, MySqlHelper.MEMBER_COLUMN_PHONE, MySqlHelper.MEMBER_COLUMN_BELT_LEVEL,
         MySqlHelper.MEMBER_MEMBERSINCE};
+    private String[] attendance_cols = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
 
 
     public DataHelper(Context context) {
@@ -99,6 +100,38 @@ public class DataHelper {
             this.open(); // ensure we have a writable database
             insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
             this.close();
+        } catch (Exception e) {
+            Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
+            e.printStackTrace();
+        }
+        return insertId;
+         /*
+        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
+                null, null, null, null);
+
+        cur.moveToFirst();
+        Attendance newAttend = cursorToAttendance(cur);
+        cur.close();
+        */
+
+    }
+    public long updateAttend(Attendance attend) {
+
+        long insertId = -1;
+        ContentValues values = new ContentValues();
+        values.put(MySqlHelper.ATTEND_COLUMN_ID, attend.getId());
+        values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
+        values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, attend.getMemberId());
+
+        Log.e("createAttend",
+                "ID:" + attend.getId()
+                        + "; Date: " + attend.getAttendDate()
+                        + "; Member ID: " + attend.getMemberId());
+        try {
+            //insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
+            String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
+            String[] whereArgs = new String[] {(attend.getId() + "")};
+            insertId = database.update(MySqlHelper.TABLE_ATTENDANCE, values, whereClause, whereArgs );
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
             e.printStackTrace();
@@ -288,6 +321,29 @@ public class DataHelper {
         // db.close();
 
     }
+    public Attendance getAttendanceRecord(long attendanceId) {
+        Attendance att = new Attendance();
+
+        // initialize to -1
+        att.setId(-1);
+        Log.e("DataHelper.getAtt", "getting attendance...");
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
+        String[] whereArgs = new String[] {(attendanceId + "")};
+        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, attendance_cols, whereClause, whereArgs, null, null, null);
+        if (cur.moveToFirst()) {
+            Log.e("getAttRec", "ID:" + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ID))
+                            + "; Att Date: " + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE))
+                            + "; memberId: " + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_MEMBER_ID))
+            );
+            att = cursorToAttendance(cur);
+
+        }
+        return att;
+        // db.close();
+
+    }
+
     private Member cursorToMember(Cursor cur) {
         Member mem = new Member();
         try {
