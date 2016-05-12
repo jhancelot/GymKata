@@ -49,9 +49,9 @@ public class DataHelper {
         long insertId = -1;
 
         // prepare the phone number and the dates by stripping out non-digits
-        mem.setPhoneNumber(mem.getPhoneNumber().replaceAll("^[0-9]",""));
-        mem.setMemberSince(mem.getMemberSince().replaceAll("^[0-9]",""));
-        mem.setDob(mem.getDob().replaceAll("^[0-9]",""));
+        mem.setPhoneNumber(mem.getPhoneNumber().replaceAll("\\D+",""));
+        mem.setMemberSince(mem.getMemberSince().replaceAll("\\D+", ""));
+        mem.setDob(mem.getDob().replaceAll("\\D+",""));
         ContentValues values = new ContentValues();
         values.put(MySqlHelper.MEMBER_COLUMN_FIRSTNAME, mem.getFirstName());
         values.put(MySqlHelper.MEMBER_COLUMN_LASTNAME, mem.getLastName());
@@ -85,9 +85,57 @@ public class DataHelper {
         */
         return insertId;
     }
+    public long updateMember(Member mem) {
+        long insertId = -1;
+
+        // prepare the phone number and the dates by stripping out non-digits
+        mem.setPhoneNumber(mem.getPhoneNumber().replaceAll("\\D+",""));
+        mem.setMemberSince(mem.getMemberSince().replaceAll("\\D+", ""));
+        mem.setDob(mem.getDob().replaceAll("\\D+",""));
+        ContentValues values = new ContentValues();
+        values.put(MySqlHelper.MEMBER_COLUMN_FIRSTNAME, mem.getFirstName());
+        values.put(MySqlHelper.MEMBER_COLUMN_LASTNAME, mem.getLastName());
+        values.put(MySqlHelper.MEMBER_COLUMN_DOB, mem.getDob());
+        values.put(MySqlHelper.MEMBER_COLUMN_EMAIL, mem.getEmail());
+        values.put(MySqlHelper.MEMBER_COLUMN_PHONE, mem.getPhoneNumber());
+        values.put(MySqlHelper.MEMBER_COLUMN_BELT_LEVEL, mem.getBeltLevel());
+        values.put(MySqlHelper.MEMBER_MEMBERSINCE, mem.getMemberSince());
+        Log.i("updateMem",
+                "ID:" + mem.getId()
+                        + "; First Name: " + mem.getFirstName()
+                        + "; Last Name: " + mem.getLastName()
+                        + "; Belt Level: " + mem.getBeltLevel());
+        Log.i("DB.isreadonly","ro=" + database.isReadOnly());
+        try {
+            // ensure we have a writable database
+            this.open();
+//            insertId = database.insert(MySqlHelper.TABLE_MEMBER, null, values);
+            String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
+            String[] whereArgs = new String[] {(mem.getId() + "")};
+            insertId = database.update(MySqlHelper.TABLE_MEMBER, values, whereClause, whereArgs );
+
+            this.close();
+        } catch (Exception e) {
+            Log.e(DataHelper.class.getName(), "Error UPDATING database: " + e.toString());
+            e.printStackTrace();
+        }
+        /*
+        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, MySqlHelper.MEMBER_COLUMN_ID + " = " + insertId,
+                null, null, null, null);
+        cur.moveToFirst();
+        Member newMember = cursorToMember(cur);
+        insertId = newMember.getId();
+        cur.close();
+        */
+        return insertId;
+    }
+
     public long createAttend(Attendance attend) {
 
         long insertId = -1;
+        // strip non-digits out of the Attendance Date
+        attend.setAttendDate(attend.getAttendDate().replaceAll("\\D+",""));
+
         ContentValues values = new ContentValues();
         values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
         values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, attend.getMemberId());
@@ -123,7 +171,7 @@ public class DataHelper {
         values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
         values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, attend.getMemberId());
 
-        Log.e("createAttend",
+        Log.e("updAttend",
                 "ID:" + attend.getId()
                         + "; Date: " + attend.getAttendDate()
                         + "; Member ID: " + attend.getMemberId());
@@ -133,7 +181,7 @@ public class DataHelper {
             String[] whereArgs = new String[] {(attend.getId() + "")};
             insertId = database.update(MySqlHelper.TABLE_ATTENDANCE, values, whereClause, whereArgs );
         } catch (Exception e) {
-            Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
+            Log.e(DataHelper.class.getName(), "Error UPDATING database: " + e.toString());
             e.printStackTrace();
         }
         return insertId;

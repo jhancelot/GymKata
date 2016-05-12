@@ -30,11 +30,11 @@ import java.util.Date;
 import java.util.List;
 
 public class MemberActivity extends AppCompatActivity implements View.OnClickListener, Constants {
-    private Spinner spin;
+    private Spinner mSpinBeltLevel;
     private TypedArray beltImages;
     private String[] belts;
     private String belt;
-    private ImageView image;
+    private ImageView mImageBeltLevel;
     private Calendar cal;
     private Menu mainMenu;
 
@@ -87,15 +87,15 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         // SPINNER
         belts = getResources().getStringArray(R.array.belt_level_list);
         beltImages = getResources().obtainTypedArray(R.array.belt_images_list);
-        image = (ImageView) findViewById(R.id.imageBeltLevel);
-        spin = (Spinner) findViewById(R.id.spBeltLevel);
+        mImageBeltLevel = (ImageView) findViewById(R.id.imageBeltLevel);
+        mSpinBeltLevel = (Spinner) findViewById(R.id.spBeltLevel);
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, belts);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spin.setAdapter(adapter);
-        spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        mSpinBeltLevel.setAdapter(adapter);
+        mSpinBeltLevel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                image.setImageResource(beltImages.getResourceId(spin.getSelectedItemPosition(),-1));
+                mImageBeltLevel.setImageResource(beltImages.getResourceId(mSpinBeltLevel.getSelectedItemPosition(), -1));
                 belt = parent.getItemAtPosition(position).toString();
                 Log.i("ItemSelected", "belt: " + belt);
             }
@@ -144,7 +144,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mDob.setText(member.getDob());
         mPhone.setText(member.getPhoneNumber());
         mEmail.setText(member.getEmail());
-        spin.setSelection(adapter.getPosition(member.getBeltLevel()));
+        mSpinBeltLevel.setSelection(adapter.getPosition(member.getBeltLevel()));
         mMemberSince.setText(member.getMemberSince());
     }
 
@@ -154,12 +154,35 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         getMenuInflater().inflate(R.menu.menu_member, menu);
         this.mainMenu = menu;
         // CHECK EDIT MODE
-        if (editMode == Constants.VIEW_MODE) {
-            mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+        if (editMode == VIEW_MODE) {
+            disableForm();
         } else { // IF IN EDIT MODE THEN DISPLAY THE SAVE BUTTON
-            mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
+            enableForm();
         }
         return true;
+    }
+    private void enableForm() {
+        mFirstName.setEnabled(true);
+        mLastName.setEnabled(true);
+        mDob.setEnabled(true);
+        mEmail.setEnabled(true);
+        mPhone.setEnabled(true);
+        mSpinBeltLevel.setEnabled(true);
+        mMemberSince.setEnabled(true);
+        mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
+
+    }
+
+    private void disableForm() {
+        mFirstName.setEnabled(false);
+        mLastName.setEnabled(false);
+        mDob.setEnabled(false);
+        mEmail.setEnabled(false);
+        mPhone.setEnabled(false);
+        mSpinBeltLevel.setEnabled(false);
+        mMemberSince.setEnabled(false);
+        mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+
     }
 
     @Override
@@ -181,14 +204,14 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             // to checkbox and enter "Edit" mode
             if (editMode == Constants.VIEW_MODE) {
                 editMode = Constants.EDIT_EXISTING;
-                mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
+                enableForm();
             } else if (editMode == Constants.EDIT_NEW || editMode == Constants.EDIT_EXISTING) {
                 // Check form field values
                 String msg = validateForm();
                 if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
                     // Save Member Data
                     editMode = Constants.VIEW_MODE;
-                    mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+                    disableForm();
                     Member mem = new Member(mFirstName.getText().toString(), mLastName.getText().toString(), belt);
                     if (mEmail != null && mEmail.getText().toString().length() > 0)
                         mem.setEmail(mEmail.getText().toString());
@@ -199,16 +222,21 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                     if (mMemberSince != null && mMemberSince.getText().toString().length() > 0)
                         mem.setMemberSince(mMemberSince.getText().toString());
                     try {
-                        long memberId = -1;
                         DataHelper dataHelper = new DataHelper(MemberActivity.this);
                         dataHelper.open();
-                        memberId = dataHelper.createMember(mem);
+                        if (currentMemberId > -1) { // then we are updating an existing record
+                            mem.setId(currentMemberId);
+                            currentMemberId = dataHelper.updateMember(mem);
+                        } else { // then we are creating a new member
+                            currentMemberId = dataHelper.createMember(mem);
+                        }
                         dataHelper.close();
 
                         //memberId = mem.createMember(MemberActivity.this);
-                        if (memberId == -1)
-                            throw new Exception("memberId is -1, so something went wrong");
-                        msgBox("Saved!", findViewById(android.R.id.content));
+                        if (currentMemberId == -1)
+                            throw new Exception("curMemberId is -1, so something went wrong");
+
+                        msgBox("Saved member " + mem.getFirstName() + " " + mem.getLastName(), findViewById(android.R.id.content));
                     } catch (Exception e) {
                         msgBox("Error creating Member Record: " + e.toString(), findViewById(android.R.id.content));
                         e.printStackTrace();

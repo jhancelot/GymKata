@@ -95,16 +95,29 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
         this.mainMenu = menu;
         // CHECK EDIT MODE
         if (editMode == Constants.VIEW_MODE) {
-            mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
-            mAttendanceDate.setFocusable(false);
-            mAttendanceDate.setEnabled(false);
+            disableForm();
         } else { // IF IN EDIT MODE THEN DISPLAY THE SAVE BUTTON
-            mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
-            mAttendanceDate.setFocusableInTouchMode(true);
-            mAttendanceDate.setFocusable(true);
-            mAttendanceDate.setEnabled(true);
+            enableForm();
         }
         return true;
+    }
+
+    private void enableForm() {
+        mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
+        //mAttendanceDate.setFocusableInTouchMode(true);
+        //mAttendanceDate.setFocusable(true);
+        mAttendanceDate.setEnabled(true);
+
+    }
+
+    private void disableForm() {
+        mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
+        // setFocusable seems to need both setFocusable and setFocusableInTouchMode to
+        // set it back to true
+        // setEnabled works good but the letters are greyed out.
+        //mAttendanceDate.setFocusable(false);
+        mAttendanceDate.setEnabled(false);
+
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -122,10 +135,7 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
 
                 editMode = Constants.EDIT_EXISTING;
                 Log.i("AttendActivity", "1. editMode switched to " + editMode);
-                mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
-                mAttendanceDate.setFocusableInTouchMode(true);
-                mAttendanceDate.setFocusable(true);
-                mAttendanceDate.setEnabled(true);
+                enableForm();
             } else if (editMode == Constants.EDIT_NEW || editMode == Constants.EDIT_EXISTING) {
                 // Check form field values
                 String msg = validateForm();
@@ -133,9 +143,7 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
                     // Save Member Data
                     editMode = Constants.VIEW_MODE;
                     Log.i("AttendActivity", "2. editMode switched to " + editMode);
-                    mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
-                    mAttendanceDate.setFocusable(false);
-                    mAttendanceDate.setEnabled(false);
+                    disableForm();
                     Attendance att = new Attendance(currentMemberId);
                     if (currentMemberId > -1)
                         att.setMemberId(Integer.parseInt(mAttendanceId.getText().toString()));
@@ -144,7 +152,6 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
                     if (mAttendanceDate != null && mAttendanceDate.getText().toString().length() > 0)
                         att.setAttendDate(mAttendanceDate.getText().toString());
                     try {
-                        long memberId = -1;
                         DataHelper dataHelper = new DataHelper(AttendanceActivity.this);
                         dataHelper.open();
                         if (currentAttendanceId > -1) { // then this is an edit of an existing record
@@ -158,7 +165,11 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
                         //memberId = mem.createMember(MemberActivity.this);
                         if (currentAttendanceId == -1)
                             throw new Exception("currentAttendanceId is -1, so something went wrong");
-                        msgBox("Saved!", findViewById(android.R.id.content));
+                        msgBox("Saved attendance for member " + mFullName.getText(), findViewById(android.R.id.content));
+                        Intent i = new Intent();
+                        i.putExtra(MEMBER_ID, currentMemberId);
+                        setResult(RESULT_OK, i);
+                        finish();
                     } catch (Exception e) {
                         msgBox("Error creating Member Record: " + e.toString(), findViewById(android.R.id.content));
                         e.printStackTrace();
