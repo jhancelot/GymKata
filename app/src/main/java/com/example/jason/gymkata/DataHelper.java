@@ -104,15 +104,19 @@ public class DataHelper {
                 "ID:" + mem.getId()
                         + "; First Name: " + mem.getFirstName()
                         + "; Last Name: " + mem.getLastName()
-                        + "; Belt Level: " + mem.getBeltLevel());
-        Log.i("DB.isreadonly","ro=" + database.isReadOnly());
+                        + "; Belt Level: " + mem.getBeltLevel()
+                        + "; Phone: " + mem.getPhoneNumber()
+                        + "; member since: " + mem.getMemberSince()
+                        + "; dob: " + mem.getDob()
+        );
+        Log.i("DB.isreadonly", "ro=" + database.isReadOnly());
         try {
             // ensure we have a writable database
             this.open();
 //            insertId = database.insert(MySqlHelper.TABLE_MEMBER, null, values);
             String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
             String[] whereArgs = new String[] {(mem.getId() + "")};
-            insertId = database.update(MySqlHelper.TABLE_MEMBER, values, whereClause, whereArgs );
+            insertId = database.update(MySqlHelper.TABLE_MEMBER, values, whereClause, whereArgs);
 
             this.close();
         } catch (Exception e) {
@@ -134,7 +138,7 @@ public class DataHelper {
 
         long insertId = -1;
         // strip non-digits out of the Attendance Date
-        attend.setAttendDate(attend.getAttendDate().replaceAll("\\D+",""));
+        attend.setAttendDate(attend.getAttendDate().replaceAll("\\D+", ""));
 
         ContentValues values = new ContentValues();
         values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
@@ -267,10 +271,21 @@ public class DataHelper {
         return i;
     }
 
-    public void deleteMember(Member mem) {
-        long id = mem.getId();
-        Log.e("DataHelper.deleteMember", "Deleting member: " + mem.getId());
-        database.delete(MySqlHelper.TABLE_MEMBER, MySqlHelper.MEMBER_COLUMN_ID + " = " + id, null);
+    public void deleteMember(long memberId) throws SQLException {
+        Log.e("DataHelper.deleteMember", "Deleting member: " + memberId);
+        database.beginTransaction();
+        try {
+            database.delete(MySqlHelper.TABLE_MEMBER, MySqlHelper.MEMBER_COLUMN_ID + " = " + memberId, null);
+            database.delete(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID + " = " + memberId, null);
+            database.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e(DataHelper.class.getName(), "Error in deleteMember: " + e.toString());
+            e.printStackTrace();
+            throw new SQLException(e);
+
+        } finally {
+            database.endTransaction();
+        }
     }
 
     public void deleteAllMembers() throws SQLException {
@@ -304,7 +319,8 @@ public class DataHelper {
         if (dbHelper == null) dbHelper = new MySqlHelper(context);
         List<Member> members = new ArrayList<Member>();
         if (database == null || !database.isReadOnly()) database = dbHelper.getReadableDatabase();
-        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, null, null, null, null, null);
+        // This will retrieve all data in the Member table and order by LASTNAME
+        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, null, null, null, null, MySqlHelper.MEMBER_COLUMN_LASTNAME);
         cur.moveToFirst();
         while (!cur.isAfterLast()) {
             Member mem = cursorToMember(cur);

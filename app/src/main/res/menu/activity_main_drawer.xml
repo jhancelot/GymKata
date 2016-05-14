@@ -4,9 +4,9 @@
     <group android:checkableBehavior="single">
 
         <item
-            android:id="@+id/nav_login"
-            android:icon="@drawable/blackbelt"
-            android:title="@string/nav_drawer_login" />
+            android:id="@+id/nav_generate_members"
+            android:icon="@drawable/ic_group_add_24dp"
+            android:title="@string/nav_drawer_generate_members" />
         <item
             android:id="@+id/nav_runmode"
             android:icon="@drawable/ic_menu_slideshow"

@@ -1,7 +1,9 @@
 package com.example.jason.gymkata;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
@@ -10,6 +12,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.PhoneNumberUtils;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class MemberActivity extends AppCompatActivity implements View.OnClickListener, Constants {
     private Spinner mSpinBeltLevel;
@@ -132,20 +137,20 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         }
 
         // FLOATING ACTION BAR
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(this);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void populateForm(Member member) {
         mId.setText(member.getId()+"");
         mFirstName.setText(member.getFirstName());
         mLastName.setText(member.getLastName());
-        mDob.setText(member.getDob());
+        mDob.setText(member.getFormattedDob());
         mPhone.setText(member.getPhoneNumber());
         mEmail.setText(member.getEmail());
         mSpinBeltLevel.setSelection(adapter.getPosition(member.getBeltLevel()));
-        mMemberSince.setText(member.getMemberSince());
+        mMemberSince.setText(member.getFormattedMemberSince());
     }
 
     @Override
@@ -202,16 +207,21 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
             // if in "View" mode, then the pencil is displayed, so switch
             // to checkbox and enter "Edit" mode
-            if (editMode == Constants.VIEW_MODE) {
-                editMode = Constants.EDIT_EXISTING;
+            if (editMode == VIEW_MODE) {
+                editMode = EDIT_EXISTING;
                 enableForm();
-            } else if (editMode == Constants.EDIT_NEW || editMode == Constants.EDIT_EXISTING) {
+            } else if (editMode == EDIT_NEW || editMode == EDIT_EXISTING) {
                 // Check form field values
+                if (editMode == EDIT_NEW) {
+                    // default to current date but allow user to change
+                    Calendar c = Calendar.getInstance();
+                    SimpleDateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_DISPLAY_FORMAT);
+                    mMemberSince.setText(formatter.format(c.getTime()));
+                }
                 String msg = validateForm();
+                Log.i("MbrAct", "Message returned from validateForm: " + msg);
                 if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
                     // Save Member Data
-                    editMode = Constants.VIEW_MODE;
-                    disableForm();
                     Member mem = new Member(mFirstName.getText().toString(), mLastName.getText().toString(), belt);
                     if (mEmail != null && mEmail.getText().toString().length() > 0)
                         mem.setEmail(mEmail.getText().toString());
@@ -235,8 +245,20 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                         //memberId = mem.createMember(MemberActivity.this);
                         if (currentMemberId == -1)
                             throw new Exception("curMemberId is -1, so something went wrong");
+                        if (editMode == EDIT_EXISTING) {
+                            // STAY IN THIS WINDOW AND DISABLE IT
+                            editMode = Constants.VIEW_MODE;
+                            disableForm();
+                        } else { // editMode must be EDIT_NEW, so close the window and back to list
+                            Intent i = new Intent();
+                            i.putExtra(MEMBER_ID, currentMemberId);
+                            i.putExtra(EDIT_MODE, EDIT_NEW);
+                            setResult(RESULT_OK, i);
+                            MemberActivity.this.finish();
 
+                        }
                         msgBox("Saved member " + mem.getFirstName() + " " + mem.getLastName(), findViewById(android.R.id.content));
+
                     } catch (Exception e) {
                         msgBox("Error creating Member Record: " + e.toString(), findViewById(android.R.id.content));
                         e.printStackTrace();
@@ -253,6 +275,17 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
 
         } else if (id == R.id.action_delete) {
             Log.i("onOption", "DELETE selected");
+            /*
+            MsgBox msg = new MsgBox("OK to delete the member and all associated attendance?", MemberActivity.this);
+            if (msg.getResponse() != null && msg.getResponse().equals(MsgBox.RESPONSE_YES)) {
+                Log.i("MemberAct", "yes! selected");
+            } else {
+                Log.i("MemberAct", "no! selected");
+            }
+            */
+
+            this.deleteMember();
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -260,25 +293,103 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private String validateForm() {
         List<String> msgs = new ArrayList<String>();
         String readableMsg = "";
-        if (mFirstName.getText() == null || mFirstName.getText().length() == 0) {
+        View focusView = null;
+        boolean cancel = false;
+        // Check for a valid password, if the user entered one.
+        if (TextUtils.isEmpty(mFirstName.getText().toString()) ) {
+            mFirstName.setError(getString(R.string.error_invalid_fname));
+            focusView = mFirstName;
+            cancel = true;
             msgs.add("First Name");
         }
-        if (mLastName.getText() == null || mLastName.getText().length() == 0) {
+        if (TextUtils.isEmpty(mLastName.getText().toString())) {
+            mLastName.setError(getString(R.string.error_invalid_lname));
             msgs.add("Last Name");
+            focusView = mLastName;
+            cancel = true;
         }
-        if (mEmail.getText() == null || mEmail.getText().length() == 0) {
+        if (!isDateValid(mDob.getText().toString())) {
+            mDob.setError(getString(R.string.error_invalid_dob));
             msgs.add("Email");
-
+            focusView = mDob;
+            cancel = true;
         }
-        if (mPhone.getText() == null || mPhone.getText().length() == 0) {
-            msgs.add("Phone number");
+        if (!isEmailValid(mEmail.getText().toString())) {
+            mEmail.setError(getString(R.string.error_invalid_email));
+            msgs.add("Email");
+            focusView = mEmail;
+            cancel = true;
+        }
+        Log.i("valForm", "isDigitsOnly(Phone): " + TextUtils.isDigitsOnly(mPhone.getText()));
+        if (!TextUtils.isDigitsOnly(mPhone.getText())) {
 
+            mPhone.setError(getString(R.string.error_invalid_phone));
+            msgs.add("Phone number");
+            focusView = mPhone;
+            cancel = true;
+        }
+        if (!isDateValid(mMemberSince.getText().toString())) {
+            mMemberSince.setError(getString(R.string.error_invalid_membersince));
+            msgs.add("Member Since");
+            focusView = mMemberSince;
+            cancel = true;
         }
         for (String msg: msgs) {
             readableMsg = readableMsg + ", " + msg;
         }
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        }
         return (readableMsg.length() == 0)?readableMsg:readableMsg + " are invalid";
     }
+    private boolean isEmailValid(String email) {
+        if (email == null) {
+            return false;
+        } else {
+            return email.contains("@") && email.contains(".");
+        }
+    }
+    private boolean isDateValid(String date) {
+        if (date == null) {
+            return false;
+        } else {
+            String d = date.replaceAll("\\D+","");
+            if (d.length() == 8) {
+                try {
+                    // try to parse the date based on the standard format. If there's an exception then
+                    // can't continue
+                    SimpleDateFormat inputDateFormat = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT, Locale.getDefault());
+                    inputDateFormat.parse(d);
+                } catch (ParseException e) {
+                    Log.w("isDateValid", "Date Parse Exception for " + d + ": " + e.toString());
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    private boolean isPhoneValid(String phone) {
+        if (phone == null) {
+            return false;
+        } else if (phone.contains("(") || phone.contains(")")) {
+            return false;
+        } else {
+            String p = phone.replaceAll("\\D+","");
+            if (p.length() == 10) { // north american phone numbers
+                PhoneNumberUtils.formatNumber(phone, DEFAULT_COUNTRY_ISO);
+
+            } else {
+                return false;
+            }
+
+        }
+        return true;
+    }
+
 
     @Override
     public void onClick(View v) {
@@ -296,14 +407,6 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
 */
         // check which widget was clicked
         switch (v.getId()) {
-            case R.id.buttGenerate:
-                Log.e("MainActivity.onClick", "SAVE MEMBER CLICKED");
-
-                break;
-            case R.id.buttDelOne:
-                Log.e("MainActivity.onClick: ", "DELETE MEMBER CLICKED");
-
-                break;
             case R.id.buttDobCalendar:
                 Log.e("MainActivity.onClick: ", "DOB Calendar CLICKED");
                 DialogFragment dobFragment = new DatePickerFragment();
@@ -334,6 +437,53 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
 
         //  dataHelper.close();
 
+    }
+
+    private void deleteMember() {
+        // ASSUME THE USER CANCELLED the request
+        AlertDialog.Builder alert = new AlertDialog.Builder(MemberActivity.this);
+        alert.setTitle(this.getTitle() + " decision");
+        alert.setMessage("Are you sure you want to delete member and all associated attendance?");
+        alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("MemAct.delMem", "YES clicked...");
+                try {
+                    DataHelper dataHelper = new DataHelper(MemberActivity.this);
+                    dataHelper.open();
+                    dataHelper.deleteMember(currentMemberId);
+                    dataHelper.close();
+
+                    // set up the calling Intent (MainActivity) so that it knows to recreate the adapter
+                    // for the list box
+                    Intent i = new Intent();
+                    i.putExtra(MEMBER_ID, currentMemberId);
+                    i.putExtra(EDIT_MODE, DELETE_EXISTING);
+                    setResult(RESULT_OK, i);
+
+                    MemberActivity.this.finish();
+                } catch (Exception e) {
+                    Log.e("MemAct.delMem", e.toString());
+                    e.printStackTrace();
+
+                }
+            }
+        });
+
+        alert.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("MemAct.delMem", "NO clicked...");
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = alert.create();
+        dialog.show();
+    }
+    private void msgBox(String msg, View view) {
+        Log.e("MbrActivity", msg);
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
     }
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -377,9 +527,5 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private void msgBox(String msg, View view) {
-        Log.e("MemberActivity", msg);
-        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
-    }
+
 }

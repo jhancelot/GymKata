@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,9 +62,19 @@ public class Attendance {
         //Calendar cal = Calendar.getInstance();
         //cal.setTimeInMillis(this.attendDate);
        //return dateFormat.format(cal.getTime());
-        SimpleDateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_DISPLAY_FORMAT, Locale.getDefault());
-        Date d = new Date(this.attendDate);
-        return dateFormat.format(d);
+        String formattedDate = null;
+        SimpleDateFormat outputDateFormat = new SimpleDateFormat(MySqlHelper.DATE_DISPLAY_FORMAT, Locale.getDefault());
+        SimpleDateFormat inputDateFormat = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT, Locale.getDefault());
+        try {
+            formattedDate = outputDateFormat.format(inputDateFormat.parse(this.attendDate));
+
+        } catch (ParseException e) {
+            Log.e("formatDate", "Error formatting date: " + e.toString());
+            e.printStackTrace();
+            formattedDate = this.attendDate;
+        }
+        Log.i("formatDate", "value of formattedDate: " + formattedDate + "... value of unformatted date: " + this.getAttendDate());
+        return formattedDate;
 
     }
 
@@ -81,7 +92,8 @@ public class Attendance {
     @Override
     public String toString() {
 
-        return this.getMemberId() + ": " + this.getAttendDate();
+        //return this.getMemberId() + ": " + this.getAttendDate();
+        return this.getFormattedAttendDate();
     }
 
     public static List<Attendance> getAllAttendance(Context context) {

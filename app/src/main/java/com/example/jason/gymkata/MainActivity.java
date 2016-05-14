@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -51,55 +52,8 @@ public class MainActivity extends AppCompatActivity
 
         // LIST VIEW
         // OPEN THE DATABASE
-        DataHelper dataHelper = new DataHelper(this);
-        try {
-            dataHelper.open();
-            Log.w(MainActivity.class.getName(), "Database successfully opened ");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
-        }
-
         // POPULATE THE LISTVIEW WIDGET with the LastName and the FirstName out of the Members List
-       // this.refreshListData();
-        memberList = dataHelper.getAllMembers(this);
-        dataHelper.close();
-        lvMembers = (ListView) findViewById(R.id.lvMembers);
-        adapter = new ArrayAdapter<Member>(this, android.R.layout.simple_list_item_1, memberList);
-        lvMembers.setAdapter(adapter);
-
-        lvMembers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View v, int position,
-                                    long id) {
-
-                //svFilter.setText(adapterView.getItemAtPosition(position) + "");
-                currentMember = (Member) adapterView.getItemAtPosition(position);
-                //currentPosition = position;
-                Log.e(MainActivity.class.getName(),
-                        "position=" + position
-                                + " and id=" + id
-                                + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
-                Log.e("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
-
-
-
-                // This code removes an entry from the list with a "fade" effect
-                /*
-                  v.animate().setDuration(2000).alpha(0)
-                          .withEndAction(new Runnable() {
-                              @Override
-                              public void run() {
-                dataHelper.deleteMember(currentMember);
-                adapter.remove(currentMember);
-
-                              }
-                          });
-                */
-
-            }
-        });
-
+        this.refreshListData();
 
         // SEARCH VIEW FIELD
         svFilter = (SearchView) findViewById(R.id.svNameFilter);
@@ -121,17 +75,11 @@ public class MainActivity extends AppCompatActivity
       //  dataHelper.close();
 
         // Add the buttons
-        Button buttGen = (Button) findViewById(R.id.buttGenerate);
-        buttGen.setOnClickListener(this);
-
         Button buttList = (Button) findViewById(R.id.buttList);
         buttList.setOnClickListener(this);
 
         Button buttDelAll = (Button) findViewById(R.id.buttDelAll);
         buttDelAll.setOnClickListener(this);
-
-        Button buttDelOne = (Button) findViewById(R.id.buttDelOne);
-        buttDelOne.setOnClickListener(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
@@ -145,26 +93,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-    }
-
-    private void refreshListData() {
-        Log.e("refreshListData()", "refreshing list data...");
-        DataHelper dataHelper = new DataHelper(this);
-        try {
-            dataHelper.open();
-            Log.w(MainActivity.class.getName(), "Database successfully opened ");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
-        }
-        memberList = dataHelper.getAllMembers(MainActivity.this);
-        dataHelper.close();
-        namesList = new ArrayList<String>();
-        for (Member m : memberList) {
-            namesList.add(m.getLastName() + ", " + m.getFirstName());
-            adapter.add(m);
-        }
-        adapter.notifyDataSetChanged();
     }
 
 
@@ -195,32 +123,49 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_admin_login) {
-            Log.i("onOption", "Admin Login Selected");
+        if (id == R.id.action_admin_logout) {
+            Log.i("onOption", "Admin Logout Selected");
+            SharedPreferences sharedPrefs = getSharedPreferences(LOGIN_PREFS, MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putString(LOGIN_STATE, LOGGED_OUT);
+
+            Intent i = new Intent(getBaseContext(), RunModeActivity.class);
+            startActivity(i);
+            finishAndRemoveTask();
             return true;
         } else if (id == R.id.action_save_or_edit) {
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
 
             //    mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
             Log.i("onOption", "SAVE OR EDIT selected");
-            Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
-            Intent i = new Intent(getBaseContext(), MemberActivity.class);
-            i.putExtra(EDIT_MODE, VIEW_MODE);
-            i.putExtra(MEMBER_ID, currentMember.getId());
-            startActivity(i);
+            if (currentMember != null && currentMember.getId() > -1) {
+                // then continue
+                Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+                Intent i = new Intent(getBaseContext(), MemberActivity.class);
+                i.putExtra(EDIT_MODE, VIEW_MODE);
+                i.putExtra(MEMBER_ID, currentMember.getId());
+                startActivityForResult(i, 1);
+            } else {
+                snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
+            }
 
         } else if (id == R.id.action_attendance) {
             Log.i("onOption", "ATTENDANCE selected");
-            try {
-                Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+            if (currentMember != null && currentMember.getId() > -1) {
+                // then continue
+                try {
+                    Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
 
-                Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
-                i.putExtra(EDIT_MODE, VIEW_MODE);
-                i.putExtra(MEMBER_ID, currentMember.getId());
-                startActivity(i);
-            } catch (Exception e) {
-                Log.e("MainActivity.Option", "Error deleting member: " + e.toString());
-                e.printStackTrace();
+                    Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
+                    i.putExtra(EDIT_MODE, VIEW_MODE);
+                    i.putExtra(MEMBER_ID, currentMember.getId());
+                    startActivity(i);
+                } catch (Exception e) {
+                    Log.e("MainActivity.Option", "Error getting Attendance: " + e.toString());
+                    e.printStackTrace();
+                }
+            } else {
+                snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
             }
 
         } else if (id == R.id.action_delete) {
@@ -234,12 +179,14 @@ public class MainActivity extends AppCompatActivity
                         // SHOULD WE BE DELETING THE ASSOCIATED ATTENDANCE RECORDS AS WELL?
                         //currentMember.delete(MainActivity.this);
                         adapter.remove(currentMember);
-
                         adapter.notifyDataSetChanged();
                     } catch (Exception e) {
                         Log.e("MainActivity.Option", "Error deleting member: " + e.toString());
                         e.printStackTrace();
                     }
+                } else {
+                    snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
+
                 }
 
 
@@ -252,17 +199,47 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if(resultCode == RESULT_OK){
+                long mode = data.getIntExtra(EDIT_MODE, VIEW_MODE); // DEFAULT TO VIEW IF NOT EXIST
+                long currentMemberId = -1;
+                if (mode == DELETE_EXISTING) {
+                    this.refreshListData();
+                } else if (mode == EDIT_EXISTING || mode == EDIT_NEW) {
+                    Log.i("onActResult", "currentMemberId: " + currentMemberId);
+                    currentMemberId = data.getLongExtra(MEMBER_ID, -1);
+                    this.refreshListData();
+                } else { // ANY OTHER MODE GOES HERE
+                    Log.w("onActResult", "hmmm... unexpected MODE value: " + mode);
+                }
+
+                //adapter.notifyDataSetChanged();
+
+            }
+        }
+    }
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_login) {
+        if (id == R.id.nav_generate_members) {
             // Handle Login
-            Log.i("OnNav","LOGIN");
-            Intent i = new Intent(getBaseContext(), LoginActivity.class);
-            startActivity(i);
+            Log.e("MainActivity.onClick", "Generating member rows...");
+            DataHelper dataHelper = new DataHelper(this);
+            try {
+                dataHelper.open();
+                dataHelper.generateSampleData(MainActivity.this);
+                dataHelper.close();
+                Log.w(MainActivity.class.getName(), "Database successfully opened ");
+            } catch (SQLException e) {
+                e.printStackTrace();
+                Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+            }
+            this.refreshListData();
         } else if (id == R.id.nav_runmode) {
             // Handle the RUN MODE action
             Intent i = new Intent(getBaseContext(), RunModeActivity.class);
@@ -310,16 +287,6 @@ public class MainActivity extends AppCompatActivity
 
         // check which widget was clicked
         switch (v.getId()) {
-            case R.id.buttGenerate:
-                Log.e("MainActivity.onClick", "Generating member rows...");
-
-                dataHelper.generateSampleData(MainActivity.this);
-                this.refreshListData();
-                //memberList = dataHelper.getAllMembers(MainActivity.this);
-                //adapter.notifyDataSetChanged();
-               //lvMembers.invalidate();
-                //lvMembers.setAdapter(adapter);
-                break;
             case R.id.buttList:
                 Log.e("MainActivity.onClick: ", "Listing all rows...");
                 dataHelper.listMembersToLog(MainActivity.this);
@@ -343,7 +310,8 @@ public class MainActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 break;
-            case R.id.buttDelOne:
+
+/*            case R.id.buttDelOne:
                 Log.e("MainActivity.onClick: ", "Deleting one row...");
                 try {
                     if (adapter.getCount() > 0) {
@@ -354,7 +322,7 @@ public class MainActivity extends AppCompatActivity
                           //              @Override
                           //              public void run() {
                                             Log.e("MainActivity.onClick: ", "Deleting " + currentMember.toString());
-                                            dataHelper.deleteMember(currentMember);
+                                            dataHelper.deleteMember(currentMember.getId());
                                             adapter.remove(currentMember);
 
                           //              }
@@ -372,13 +340,20 @@ public class MainActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 break;
+*/
             case R.id.fab:
-                int total = dataHelper.countMembers();
+                Intent i = new Intent(getBaseContext(), MemberActivity.class);
+                i.putExtra(EDIT_MODE, EDIT_NEW);
+                startActivityForResult(i, 1);
+
+
+                /*int total = dataHelper.countMembers();
                 Log.e(MainActivity.class.getName(), "Total rows in database: " + total);
                 //new MsgBox("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
                 msg("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
                 Snackbar.make(v, "Total rows in database: " + total, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
+                */
                 break;
 
         }
@@ -386,7 +361,66 @@ public class MainActivity extends AppCompatActivity
         //if (dataHelper != null) dataHelper.close();
 
     }
-    private void msg(String msg, View view, String buttonType) {
+
+    private void refreshListData() {
+        Log.e("refreshListData()", "refreshing list data...");
+        DataHelper dataHelper = new DataHelper(this);
+        try {
+            dataHelper.open();
+            Log.i(MainActivity.class.getName(), "Database successfully opened ");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+        }
+
+        // POPULATE THE LISTVIEW WIDGET with the LastName and the FirstName out of the Members List
+        // this.refreshListData();
+        memberList = dataHelper.getAllMembers(this);
+        dataHelper.close();
+        lvMembers = (ListView) findViewById(R.id.lvMembers);
+        adapter = new ArrayAdapter<Member>(this, android.R.layout.simple_list_item_1, memberList);
+
+        lvMembers.setAdapter(adapter);
+
+        lvMembers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View v, int position,
+                                    long id) {
+
+                //svFilter.setText(adapterView.getItemAtPosition(position) + "");
+                currentMember = (Member) adapterView.getItemAtPosition(position);
+                //currentPosition = position;
+                Log.e(MainActivity.class.getName(),
+                        "position=" + position
+                                + " and id=" + id
+                                + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
+                Log.e("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+
+
+                // This code removes an entry from the list with a "fade" effect
+                /*
+                  v.animate().setDuration(2000).alpha(0)
+                          .withEndAction(new Runnable() {
+                              @Override
+                              public void run() {
+                dataHelper.deleteMember(currentMember);
+                adapter.remove(currentMember);
+
+                              }
+                          });
+                */
+
+            }
+        });
+    }
+
+    private void snackMsg(String msg, View view) {
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+
+    }
+
+    private void msgBox(String msg, View view, String buttonType) {
         String OK_BUTTON = "OK";
         String YES_NO_BUTTON = "YES_NO";
         String DEFAULT_MSG = "NO MESSAGE SET";

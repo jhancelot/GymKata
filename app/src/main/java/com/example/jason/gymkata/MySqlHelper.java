@@ -27,6 +27,9 @@ public class MySqlHelper extends SQLiteOpenHelper {
     public static final String DATE_SQL_FORMAT = "yyyyMMdd";
     public static final String DATE_DELIMITER = "-";
 
+    public static final String PHONE_DISPLAY_FORMAT = "";
+    public static final String PHONE_DELIMITER = "-";
+
     // SYSTEMUSER TABLE
     public static final String SYSTEM_USER_COLUMN_ID = "_id";
     public static final String SYSTEM_USER_COLUMN_NAME = "Name";
@@ -93,11 +96,28 @@ public class MySqlHelper extends SQLiteOpenHelper {
         Log.i("getFormattedDate", "date.substring(4, 6)=" + date.substring(4, 6));
         Log.i("getFormattedDate", "date.substring(6, 8)=" + date.substring(6, 8));
         if (date != null) {
-            formattedDate = date.substring(0, 4) + MySqlHelper.DATE_DELIMITER
-                    + date.substring(4, 6) + MySqlHelper.DATE_DELIMITER
+            // first strip out all non-digits
+            date = date.replaceAll("\\D+","");
+            formattedDate = date.substring(0, 4) + DATE_DELIMITER
+                    + date.substring(4, 6) + DATE_DELIMITER
                     + date.substring(6, 8);
         }
         return formattedDate;
+
+    }
+    public static String getFormattedPhone(String phoneNumber) {
+        String formattedPhone = null;
+        Log.i("getFormattedPhone", "phoneNumber=" + phoneNumber);
+        Log.i("getFormattedPhone", "phoneNumber.substring(3, 6)=" + phoneNumber.substring(3, 6));
+        Log.i("getFormattedPhone", "phoneNumber.substring(6, 10)=" + phoneNumber.substring(6, 10));
+        if (phoneNumber != null) {
+            // first strip out all non-digits
+            phoneNumber = phoneNumber.replaceAll("\\D+","");
+            formattedPhone = phoneNumber.substring(0, 3) + PHONE_DELIMITER
+                    + phoneNumber.substring(3, 6) + PHONE_DELIMITER
+                    + phoneNumber.substring(6, 10);
+        }
+        return formattedPhone;
 
     }
 
