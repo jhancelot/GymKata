@@ -1,13 +1,17 @@
 package com.example.jason.gymkata;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -41,6 +45,14 @@ public class MainActivity extends AppCompatActivity
     SearchView svFilter;
     Member currentMember;
     Menu mainMenu;
+    // Storage Permissions
+    boolean filePermissionGranted = false;
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,24 +161,6 @@ public class MainActivity extends AppCompatActivity
                 snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
             }
 
-        } else if (id == R.id.action_attendance) {
-            Log.i("onOption", "ATTENDANCE selected");
-            if (currentMember != null && currentMember.getId() > -1) {
-                // then continue
-                try {
-                    Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
-
-                    Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
-                    i.putExtra(EDIT_MODE, VIEW_MODE);
-                    i.putExtra(MEMBER_ID, currentMember.getId());
-                    startActivity(i);
-                } catch (Exception e) {
-                    Log.e("MainActivity.Option", "Error getting Attendance: " + e.toString());
-                    e.printStackTrace();
-                }
-            } else {
-                snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
-            }
 
         } else if (id == R.id.action_delete) {
             Log.i("onOption", "DELETE selected");
@@ -262,7 +256,17 @@ public class MainActivity extends AppCompatActivity
             Log.i("OnNav","IMPORT");
 
         } else if (id == R.id.nav_export) {
-            Log.i("OnNav","EXPORT");
+            Log.i("OnNav", "EXPORT");
+            // Make sure we have permission
+            verifyStoragePermissions(MainActivity.this);
+            if (filePermissionGranted) {
+                Log.i("onNavItem", "File Permissions are granted. Export can begin...");
+                ExportData exportData = new ExportData(MainActivity.this, MySqlHelper.TABLE_MEMBER);
+                exportData.execute();
+            } else {
+                snackMsg("You need to grant file permissions to perform this function",findViewById(android.R.id.content) );
+                Log.w("onNavItem", "Warning... no file permissions granted. No export possible.");
+            }
 
         }
 
@@ -366,7 +370,7 @@ public class MainActivity extends AppCompatActivity
         Log.e("refreshListData()", "refreshing list data...");
         DataHelper dataHelper = new DataHelper(this);
         try {
-            dataHelper.open();
+            dataHelper.openForRead();
             Log.i(MainActivity.class.getName(), "Database successfully opened ");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -374,7 +378,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         // POPULATE THE LISTVIEW WIDGET with the LastName and the FirstName out of the Members List
-        // this.refreshListData();
         memberList = dataHelper.getAllMembers(this);
         dataHelper.close();
         lvMembers = (ListView) findViewById(R.id.lvMembers);
@@ -395,6 +398,16 @@ public class MainActivity extends AppCompatActivity
                                 + " and id=" + id
                                 + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
                 Log.e("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+                if (currentMember != null && currentMember.getId() > -1) {
+                    // then continue
+                    Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+                    Intent i = new Intent(getBaseContext(), MemberActivity.class);
+                    i.putExtra(EDIT_MODE, VIEW_MODE);
+                    i.putExtra(MEMBER_ID, currentMember.getId());
+                    startActivityForResult(i, 1);
+                } else {
+                    snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
+                }
 
 
                 // This code removes an entry from the list with a "fade" effect
@@ -413,12 +426,54 @@ public class MainActivity extends AppCompatActivity
             }
         });
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // file-related task you need to do.
+                    filePermissionGranted = true;
+
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    filePermissionGranted = true;
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+    public void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        } else {
+            filePermissionGranted = true;
+        }
+    }
 
     private void snackMsg(String msg, View view) {
         Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
 
     }
+
 
     private void msgBox(String msg, View view, String buttonType) {
         String OK_BUTTON = "OK";

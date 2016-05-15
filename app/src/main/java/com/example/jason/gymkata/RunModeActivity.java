@@ -46,7 +46,7 @@ public class RunModeActivity extends AppCompatActivity {
         // OPEN THE DATABASE
         dataHelper = new DataHelper(this);
         try {
-            dataHelper.open();
+            dataHelper.openForRead();
             Log.w(RunModeActivity.class.getName(), "Database successfully opened ");
         } catch (SQLException e) {
             e.printStackTrace();

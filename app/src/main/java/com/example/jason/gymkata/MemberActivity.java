@@ -46,6 +46,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     ArrayAdapter<String> adapter;
 
     private long currentMemberId;
+    private Member currentMember;
     private EditText mId;
     private EditText mLastName;
     private EditText mFirstName;
@@ -88,6 +89,9 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         // TOOL BAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        // use these two lines to add the "back arrow" to the toolbar
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         // SPINNER
         belts = getResources().getStringArray(R.array.belt_level_list);
@@ -122,9 +126,9 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         if (currentMemberId > -1) {
             try {
                 DataHelper dataHelper = new DataHelper(MemberActivity.this);
-                dataHelper.open();
-                Member currentMem = dataHelper.getMember(currentMemberId);
-                populateForm(currentMem);
+                dataHelper.openForRead();
+                currentMember = dataHelper.getMember(currentMemberId);
+                populateForm(currentMember);
                 dataHelper.close();
                 Log.w(MainActivity.class.getName(), "Database successfully opened ");
             } catch (Exception e) {
@@ -147,7 +151,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mFirstName.setText(member.getFirstName());
         mLastName.setText(member.getLastName());
         mDob.setText(member.getFormattedDob());
-        mPhone.setText(member.getPhoneNumber());
+        mPhone.setText(member.getFormattedPhone());
         mEmail.setText(member.getEmail());
         mSpinBeltLevel.setSelection(adapter.getPosition(member.getBeltLevel()));
         mMemberSince.setText(member.getFormattedMemberSince());
@@ -174,6 +178,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mPhone.setEnabled(true);
         mSpinBeltLevel.setEnabled(true);
         mMemberSince.setEnabled(true);
+        // set to Checkmark icon
         mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
 
     }
@@ -186,6 +191,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mPhone.setEnabled(false);
         mSpinBeltLevel.setEnabled(false);
         mMemberSince.setEnabled(false);
+        // set to Pencil icon
         mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
 
     }
@@ -222,23 +228,26 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 Log.i("MbrAct", "Message returned from validateForm: " + msg);
                 if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
                     // Save Member Data
+                    currentMember.setFirstName(mFirstName.getText().toString());
+                    currentMember.setLastName(mLastName.getText().toString());
+                    currentMember.setBeltLevel(belt);
                     Member mem = new Member(mFirstName.getText().toString(), mLastName.getText().toString(), belt);
                     if (mEmail != null && mEmail.getText().toString().length() > 0)
-                        mem.setEmail(mEmail.getText().toString());
+                        currentMember.setEmail(mEmail.getText().toString());
                     if (mPhone != null && mPhone.getText().toString().length() > 0)
-                        mem.setPhoneNumber(mPhone.getText().toString());
+                        currentMember.setPhoneNumber(mPhone.getText().toString());
                     if (mDob != null && mDob.getText().toString().length() > 0)
-                        mem.setDob(mDob.getText().toString());
+                        currentMember.setDob(mDob.getText().toString());
                     if (mMemberSince != null && mMemberSince.getText().toString().length() > 0)
-                        mem.setMemberSince(mMemberSince.getText().toString());
+                        currentMember.setMemberSince(mMemberSince.getText().toString());
                     try {
                         DataHelper dataHelper = new DataHelper(MemberActivity.this);
                         dataHelper.open();
                         if (currentMemberId > -1) { // then we are updating an existing record
-                            mem.setId(currentMemberId);
-                            currentMemberId = dataHelper.updateMember(mem);
+                            currentMember.setId(currentMemberId);
+                            currentMemberId = dataHelper.updateMember(currentMember);
                         } else { // then we are creating a new member
-                            currentMemberId = dataHelper.createMember(mem);
+                            currentMemberId = dataHelper.createMember(currentMember);
                         }
                         dataHelper.close();
 
@@ -257,7 +266,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                             MemberActivity.this.finish();
 
                         }
-                        msgBox("Saved member " + mem.getFirstName() + " " + mem.getLastName(), findViewById(android.R.id.content));
+                        msgBox("Saved member " + currentMember.getFirstName() + " " + currentMember.getLastName(), findViewById(android.R.id.content));
 
                     } catch (Exception e) {
                         msgBox("Error creating Member Record: " + e.toString(), findViewById(android.R.id.content));
@@ -272,6 +281,24 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 Log.e("MemberActivity", "Warning unknown editMode: " + editMode);
             }
 
+        } else if (id == R.id.action_attendance) {
+            Log.i("onOption", "ATTENDANCE selected");
+            if (currentMember != null && currentMember.getId() > -1) {
+                // then continue
+                try {
+                    Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+
+                    Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
+                    i.putExtra(EDIT_MODE, VIEW_MODE);
+                    i.putExtra(MEMBER_ID, currentMember.getId());
+                    startActivity(i);
+                } catch (Exception e) {
+                    Log.e("MainActivity.Option", "Error getting Attendance: " + e.toString());
+                    e.printStackTrace();
+                }
+            } else {
+                snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
+            }
 
         } else if (id == R.id.action_delete) {
             Log.i("onOption", "DELETE selected");
@@ -314,7 +341,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             focusView = mDob;
             cancel = true;
         }
-        if (!isEmailValid(mEmail.getText().toString())) {
+        if (mEmail.getText().toString().length() > 0 && !isEmailValid(mEmail.getText().toString())) {
             mEmail.setError(getString(R.string.error_invalid_email));
             msgs.add("Email");
             focusView = mEmail;
@@ -408,13 +435,13 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         // check which widget was clicked
         switch (v.getId()) {
             case R.id.buttDobCalendar:
-                Log.e("MainActivity.onClick: ", "DOB Calendar CLICKED");
+                Log.i("MemActivity.onClick: ", "DOB Calendar CLICKED");
                 DialogFragment dobFragment = new DatePickerFragment();
                 dialogType = DIALOG_DOB;
                 dobFragment.show(getSupportFragmentManager(), "datePicker");
                 break;
             case R.id.buttMemberSinceCalendar:
-                Log.e("MainActivity.onClick: ", "MEMBER SINCE CLICKED");
+                Log.i("MemActivity.onClick: ", "MEMBER SINCE CLICKED");
                 DialogFragment msFragment = new DatePickerFragment();
                 dialogType = DIALOG_MEMBERSINCE;
                 msFragment.show(getSupportFragmentManager(), "datePicker");
@@ -527,5 +554,10 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    private void snackMsg(String msg, View view) {
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+
+    }
 
 }

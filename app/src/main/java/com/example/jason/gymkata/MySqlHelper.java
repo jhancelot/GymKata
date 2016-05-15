@@ -25,6 +25,7 @@ public class MySqlHelper extends SQLiteOpenHelper {
     //public static final String DATE_DISPLAY_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String DATE_DISPLAY_FORMAT = "yyyy-MM-dd";
     public static final String DATE_SQL_FORMAT = "yyyyMMdd";
+    public static final String DATE_FILE_NAME_FORMAT = "yyyy-MM-dd-HHmmss";
     public static final String DATE_DELIMITER = "-";
 
     public static final String PHONE_DISPLAY_FORMAT = "";
@@ -64,6 +65,10 @@ public class MySqlHelper extends SQLiteOpenHelper {
             + MEMBER_COLUMN_BELT_LEVEL + " text,"
             + MEMBER_MEMBERSINCE + " text);";
 
+    public static final String[] MEMBER_COLS = {MEMBER_COLUMN_ID, MEMBER_COLUMN_FIRSTNAME,
+            MEMBER_COLUMN_LASTNAME, MEMBER_COLUMN_DOB,MEMBER_COLUMN_EMAIL, MEMBER_COLUMN_PHONE,
+            MEMBER_COLUMN_BELT_LEVEL, MEMBER_MEMBERSINCE};
+
     // BELT LEVEL TABLE
     public static final String TABLE_BELT = "BeltLevel";
     public static final String BELT_COLUMN_ID = "_id";
@@ -88,14 +93,15 @@ public class MySqlHelper extends SQLiteOpenHelper {
             + ATTEND_COLUMN_ATTEND_DATE + " text,"
             + ATTEND_COLUMN_MEMBER_ID + " text not null);";
 
-    public static final String[] ATTEND_COLS = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
+    public static final String[] ATTEND_COLS = {ATTEND_COLUMN_ID,
+            ATTEND_COLUMN_ATTEND_DATE, ATTEND_COLUMN_MEMBER_ID};
 
     public static String getFormattedDate(String date) {
         String formattedDate = null;
-        Log.i("getFormattedDate", "date=" + date);
-        Log.i("getFormattedDate", "date.substring(4, 6)=" + date.substring(4, 6));
-        Log.i("getFormattedDate", "date.substring(6, 8)=" + date.substring(6, 8));
-        if (date != null) {
+        if (date != null && date.length() >= 8) {
+            Log.i("getFormattedDate", "date=" + date);
+            Log.i("getFormattedDate", "date.substring(4, 6)=" + date.substring(4, 6));
+            Log.i("getFormattedDate", "date.substring(6, 8)=" + date.substring(6, 8));
             // first strip out all non-digits
             date = date.replaceAll("\\D+","");
             formattedDate = date.substring(0, 4) + DATE_DELIMITER
@@ -107,10 +113,10 @@ public class MySqlHelper extends SQLiteOpenHelper {
     }
     public static String getFormattedPhone(String phoneNumber) {
         String formattedPhone = null;
-        Log.i("getFormattedPhone", "phoneNumber=" + phoneNumber);
-        Log.i("getFormattedPhone", "phoneNumber.substring(3, 6)=" + phoneNumber.substring(3, 6));
-        Log.i("getFormattedPhone", "phoneNumber.substring(6, 10)=" + phoneNumber.substring(6, 10));
-        if (phoneNumber != null) {
+        if (phoneNumber != null && phoneNumber.length() >=10) {
+            Log.i("getFormattedPhone", "phoneNumber=" + phoneNumber);
+            Log.i("getFormattedPhone", "phoneNumber.substring(3, 6)=" + phoneNumber.substring(3, 6));
+            Log.i("getFormattedPhone", "phoneNumber.substring(6, 10)=" + phoneNumber.substring(6, 10));
             // first strip out all non-digits
             phoneNumber = phoneNumber.replaceAll("\\D+","");
             formattedPhone = phoneNumber.substring(0, 3) + PHONE_DELIMITER

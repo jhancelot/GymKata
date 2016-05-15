@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PROFILE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -44,11 +45,11 @@
         <activity
             android:name=".AttendanceListActivity"
             android:label="@string/title_activity_attendance_list"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".MemberActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.jason.gymkata.MainActivity" />
+                android:value="com.example.jason.gymkata.MemberActivity" />
         </activity>
         <activity
             android:name=".TestDatePickerActivity"

@@ -117,29 +117,15 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String msg = "";
-                // *** TESTING CODE ***
-                // Test the adapterview updating properly
-                try {
-                    long currentAttendanceId = -1;
-                    currentAttendanceId = currentAttendance.getId();
-                    EditText mET = (EditText) findViewById(R.id.editText);
-                    currentAttendance.setAttendDate(mET.getText().toString());
-                    DataHelper dataHelper = new DataHelper(AttendanceListActivity.this);
-                    dataHelper.open();
-                    if (currentAttendance.getId() > -1) { // then this is an edit of an existing record
-                        currentAttendanceId = dataHelper.updateAttend(currentAttendance);
-                        adapter.notifyDataSetChanged();
-                        msg = "Data Saved";
+                Log.i("onOption", "New Attendance selected");
+                if (currentAttendance != null) Log.i("CurrentAtt", "id: " + currentAttendance.getId() + "; Curr Mem: " + currentAttendance.getMemberId());
+                Log.i("CurrentAtt", "Memberid: " +  currentMemberId);
+                Intent i = new Intent(getBaseContext(), AttendanceActivity.class);
+                i.putExtra(EDIT_MODE, EDIT_NEW);
+                i.putExtra(MEMBER_ID, currentMemberId);
+                startActivityForResult(i, 1);
 
-                    } else {
-                        msg = "oops, something went wrong";
-                    }
-                    dataHelper.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                // *** END test code ***
+                String msg = "Add Attendance called...";
                 Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
@@ -208,7 +194,7 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
     public void refreshListData() {
         try {
             DataHelper dataHelper = new DataHelper(AttendanceListActivity.this);
-            dataHelper.open();
+            dataHelper.openForRead();
             Member currentMem = new Member();
             if (currentMemberId > -1) {
                 attendanceList = dataHelper.getAllAttendance(currentMemberId, AttendanceListActivity.this);

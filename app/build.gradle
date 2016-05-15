@@ -25,4 +25,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.3.0'
     compile 'com.android.support:support-v4:23.3.0'
     compile 'com.android.support:design:23.3.0'
+    compile files('libs/opencsv-1.7.jar')
+    compile files('libs/poi-3.8-20120326.jar')
 }

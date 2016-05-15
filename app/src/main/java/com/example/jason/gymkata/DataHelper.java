@@ -42,16 +42,14 @@ public class DataHelper {
 
     public void close() {
         // this call is to the superclass which closes all open databases
-        dbHelper.close();
+        if (dbHelper != null) dbHelper.close();
     }
 
-    public long createMember(Member mem) {
-        long insertId = -1;
-
+    private ContentValues membertoContentValues(Member mem) {
         // prepare the phone number and the dates by stripping out non-digits
-        mem.setPhoneNumber(mem.getPhoneNumber().replaceAll("\\D+",""));
-        mem.setMemberSince(mem.getMemberSince().replaceAll("\\D+", ""));
-        mem.setDob(mem.getDob().replaceAll("\\D+",""));
+        if (mem.getPhoneNumber() != null) mem.setPhoneNumber(mem.getPhoneNumber().replaceAll("\\D+",""));
+        if (mem.getMemberSince() != null) mem.setMemberSince(mem.getMemberSince().replaceAll("\\D+", ""));
+        if (mem.getDob() != null) mem.setDob(mem.getDob().replaceAll("\\D+", ""));
         ContentValues values = new ContentValues();
         values.put(MySqlHelper.MEMBER_COLUMN_FIRSTNAME, mem.getFirstName());
         values.put(MySqlHelper.MEMBER_COLUMN_LASTNAME, mem.getLastName());
@@ -60,47 +58,7 @@ public class DataHelper {
         values.put(MySqlHelper.MEMBER_COLUMN_PHONE, mem.getPhoneNumber());
         values.put(MySqlHelper.MEMBER_COLUMN_BELT_LEVEL, mem.getBeltLevel());
         values.put(MySqlHelper.MEMBER_MEMBERSINCE, mem.getMemberSince());
-        Log.i("createMember",
-                "ID:" + mem.getId()
-                        + "; First Name: " + mem.getFirstName()
-                        + "; Last Name: " + mem.getLastName()
-                        + "; Belt Level: " + mem.getBeltLevel());
-        Log.i("database.isreadonly","ro=" + database.isReadOnly());
-        try {
-            // ensure we have a writable database
-            this.open();
-            insertId = database.insert(MySqlHelper.TABLE_MEMBER, null, values);
-            this.close();
-        } catch (Exception e) {
-            Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
-            e.printStackTrace();
-        }
-        /*
-        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, MySqlHelper.MEMBER_COLUMN_ID + " = " + insertId,
-                null, null, null, null);
-        cur.moveToFirst();
-        Member newMember = cursorToMember(cur);
-        insertId = newMember.getId();
-        cur.close();
-        */
-        return insertId;
-    }
-    public long updateMember(Member mem) {
-        long insertId = -1;
-
-        // prepare the phone number and the dates by stripping out non-digits
-        mem.setPhoneNumber(mem.getPhoneNumber().replaceAll("\\D+",""));
-        mem.setMemberSince(mem.getMemberSince().replaceAll("\\D+", ""));
-        mem.setDob(mem.getDob().replaceAll("\\D+",""));
-        ContentValues values = new ContentValues();
-        values.put(MySqlHelper.MEMBER_COLUMN_FIRSTNAME, mem.getFirstName());
-        values.put(MySqlHelper.MEMBER_COLUMN_LASTNAME, mem.getLastName());
-        values.put(MySqlHelper.MEMBER_COLUMN_DOB, mem.getDob());
-        values.put(MySqlHelper.MEMBER_COLUMN_EMAIL, mem.getEmail());
-        values.put(MySqlHelper.MEMBER_COLUMN_PHONE, mem.getPhoneNumber());
-        values.put(MySqlHelper.MEMBER_COLUMN_BELT_LEVEL, mem.getBeltLevel());
-        values.put(MySqlHelper.MEMBER_MEMBERSINCE, mem.getMemberSince());
-        Log.i("updateMem",
+        Log.i("membertoContentValues",
                 "ID:" + mem.getId()
                         + "; First Name: " + mem.getFirstName()
                         + "; Last Name: " + mem.getLastName()
@@ -109,28 +67,46 @@ public class DataHelper {
                         + "; member since: " + mem.getMemberSince()
                         + "; dob: " + mem.getDob()
         );
+        return values;
+    }
+    public long createMember(Member mem) {
+        long insertId = -1;
+
+
+        Log.i("database.isreadonly","ro=" + database.isReadOnly());
+        try {
+            ContentValues values = membertoContentValues(mem);
+            // ensure we have a writable database
+            this.open();
+            insertId = database.insert(MySqlHelper.TABLE_MEMBER, null, values);
+        } catch (Exception e) {
+            Log.e(DataHelper.class.getName(), "Error inserting into database: " + e.toString());
+            e.printStackTrace();
+        } finally {
+            this.close();
+
+        }
+        return insertId;
+    }
+    public long updateMember(Member mem) {
+        long insertId = -1;
+
         Log.i("DB.isreadonly", "ro=" + database.isReadOnly());
         try {
             // ensure we have a writable database
             this.open();
-//            insertId = database.insert(MySqlHelper.TABLE_MEMBER, null, values);
+            ContentValues values = membertoContentValues(mem);
             String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
             String[] whereArgs = new String[] {(mem.getId() + "")};
             insertId = database.update(MySqlHelper.TABLE_MEMBER, values, whereClause, whereArgs);
 
-            this.close();
         } catch (Exception e) {
             Log.e(DataHelper.class.getName(), "Error UPDATING database: " + e.toString());
             e.printStackTrace();
+        } finally {
+            this.close();
+
         }
-        /*
-        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, MySqlHelper.MEMBER_COLUMN_ID + " = " + insertId,
-                null, null, null, null);
-        cur.moveToFirst();
-        Member newMember = cursorToMember(cur);
-        insertId = newMember.getId();
-        cur.close();
-        */
         return insertId;
     }
 
@@ -140,14 +116,7 @@ public class DataHelper {
         // strip non-digits out of the Attendance Date
         attend.setAttendDate(attend.getAttendDate().replaceAll("\\D+", ""));
 
-        ContentValues values = new ContentValues();
-        values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
-        values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, attend.getMemberId());
-
-        Log.e("createAttend",
-                "ID:" + attend.getId()
-                        + "; Date: " + attend.getAttendDate()
-                        + "; Member ID: " + attend.getMemberId());
+        ContentValues values = this.attendToContentValues(attend);
         try {
             this.open(); // ensure we have a writable database
             insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
@@ -157,28 +126,12 @@ public class DataHelper {
             e.printStackTrace();
         }
         return insertId;
-         /*
-        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
-                null, null, null, null);
-
-        cur.moveToFirst();
-        Attendance newAttend = cursorToAttendance(cur);
-        cur.close();
-        */
 
     }
     public long updateAttend(Attendance attend) {
 
         long insertId = -1;
-        ContentValues values = new ContentValues();
-        values.put(MySqlHelper.ATTEND_COLUMN_ID, attend.getId());
-        values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
-        values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, attend.getMemberId());
-
-        Log.e("updAttend",
-                "ID:" + attend.getId()
-                        + "; Date: " + attend.getAttendDate()
-                        + "; Member ID: " + attend.getMemberId());
+        ContentValues values = this.attendToContentValues(attend);
         try {
             //insertId = database.insert(MySqlHelper.TABLE_ATTENDANCE, null, values);
             String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
@@ -189,15 +142,18 @@ public class DataHelper {
             e.printStackTrace();
         }
         return insertId;
-         /*
-        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, MySqlHelper.ATTEND_COLUMN_ID + " = " + insertId,
-                null, null, null, null);
 
-        cur.moveToFirst();
-        Attendance newAttend = cursorToAttendance(cur);
-        cur.close();
-        */
+    }
+    public ContentValues attendToContentValues(Attendance attend) {
+        ContentValues values = new ContentValues();
+        values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
+        values.put(MySqlHelper.ATTEND_COLUMN_MEMBER_ID, attend.getMemberId());
 
+        Log.e("attToCV",
+                "ID:" + attend.getId()
+                        + "; Date: " + attend.getAttendDate()
+                        + "; Member ID: " + attend.getMemberId());
+        return values;
     }
 
     public void generateSampleData(Context context) {
@@ -210,27 +166,33 @@ public class DataHelper {
         Member mem = new Member("Allan", "ADAMS", "WHITE");
 
         mem.setMemberSince(curDate);
-        //mem.setId(this.createMember(mem));
-        memberId = -1;
-        memberId = this.createMember(mem);
-        Attendance attend = new Attendance(memberId, mem.getMemberSince());
-        this.createAttend(attend);
+        try {
+            // ensure we have a writable database
+            this.open();
+            memberId = -1;
+            memberId = this.createMember(mem);
+            Attendance attend = new Attendance(memberId, mem.getMemberSince());
+            this.createAttend(attend);
 
-        memberId = -1;
-        mem = new Member("Beatrice", "BONNER", "YELLOW");
-        mem.setMemberSince(curDate);
-        memberId = this.createMember(mem);
-        attend = new Attendance(memberId, mem.getMemberSince());
-        this.createAttend(attend);
+            memberId = -1;
+            mem = new Member("Beatrice", "BONNER", "YELLOW");
+            mem.setMemberSince(curDate);
+            memberId = this.createMember(mem);
+            attend = new Attendance(memberId, mem.getMemberSince());
+            this.createAttend(attend);
 
-        memberId = -1;
-        mem = new Member("Charles", "CARSON", "PURPLE");
-        mem.setMemberSince(curDate);
-        memberId = this.createMember(mem);
-        attend = new Attendance(memberId, mem.getMemberSince());
-        this.createAttend(attend);
+            memberId = -1;
+            mem = new Member("Charles", "CARSON", "PURPLE");
+            mem.setMemberSince(curDate);
+            memberId = this.createMember(mem);
+            attend = new Attendance(memberId, mem.getMemberSince());
+            this.createAttend(attend);
 
-        //dbHelper = null;
+        } catch (Exception e) {
+            Log.e("GenMembers", "Error generating members: " + e.getMessage(), e);
+        } finally {
+           this.close();
+        }
     }
 
     public int countMembers() {

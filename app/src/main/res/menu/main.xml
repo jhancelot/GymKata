@@ -3,12 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/action_attendance"
-        android:orderInCategory="100"
-        android:title="@string/action_attendance"
-        android:icon="@drawable/ic_action_attendance"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/action_save_or_edit"
         android:orderInCategory="110"
         android:title="@string/action_save"

@@ -1,28 +1,39 @@
 package com.example.jason.gymkata;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.app.DatePickerDialog;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
-public class AttendanceActivity extends AppCompatActivity implements Constants {
+public class AttendanceActivity extends AppCompatActivity implements View.OnClickListener, Constants {
     private long currentAttendanceId;
     private long currentMemberId;
 
     private TextView mFullName;
     private TextView mAttendanceId;
-    private EditText mAttendanceDate;
+    private static EditText mAttendanceDate;
+    private static ImageButton mAttDateCalendar;
     private Menu mainMenu;
 
     private int editMode = Constants.VIEW_MODE;
@@ -38,56 +49,88 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
         mFullName = (TextView) findViewById(R.id.tvMemberFullName);
         mAttendanceId = (TextView) findViewById(R.id.tvAttendId);
         mAttendanceDate = (EditText) findViewById(R.id.etAttendanceDate);
+        // Date Picker Fragment for DOB
+        mAttDateCalendar = (ImageButton) findViewById(R.id.buttAttDateCalendar);
+        mAttDateCalendar.setOnClickListener(this);
+                /*new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i("MainActivity.onClick: ", "MEMBER SINCE CLICKED");
+                DialogFragment msFragment = new DatePickerFragment();
+                msFragment.show(getSupportFragmentManager(), "datePicker");
+
+            } */
+       // });
 
         // Populate fields
         Intent i = getIntent();
         // CHECK THE VALUE OF EDIT_MODE... IF ITS NULL THEN DEFAULT TO "NEW" MODE
         editMode = i.getIntExtra(EDIT_MODE, EDIT_NEW);
+        currentMemberId = i.getLongExtra(MEMBER_ID, -1);
+
         Log.i("AttendActivity", "editMode=" + editMode);
-        // CHECK THE VALUE OF MEMBER_ID... IF ITS NULL THEN SET TO -1
+        // CHECK THE VALUE OF ATTENDANCE_ID... IF ITS NULL THEN SET TO -1
         currentAttendanceId = i.getLongExtra(ATTENDANCE_ID, -1);
         Log.i("AttendActivity", "currentAttendanceId=" + currentAttendanceId);
-        if (currentAttendanceId > -1) {
-            try {
-                DataHelper dataHelper = new DataHelper(AttendanceActivity.this);
-                dataHelper.open();
-                Attendance currentAttend = dataHelper.getAttendanceRecord(currentAttendanceId);
-                Member currentMem = new Member();
-                if (currentAttend != null && currentAttend.getId() > -1) {
-                    currentMem = dataHelper.getMember(currentAttend.getMemberId());
-                    currentMemberId = currentAttend.getMemberId();
-                    Log.i("AttendDets", "currentAttend Value: " + currentAttend.getId());
-                    Log.i("AttendDets", "currentMember Value: " + currentMem.getId());
-                } else {
-                    Log.w("AttendDets", "currentAttend Value: " + currentAttend);
-                }
-                populateForm(currentAttend, currentMem);
-                dataHelper.close();
-                Log.w(MainActivity.class.getName(), "Database successfully opened ");
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(MainActivity.class.getName(), "Error opening database: " + e);
-            }
-
-        } else { // make sure we're in "new" mode
-            editMode = Constants.EDIT_NEW;
-        }
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "setFocus set", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                mAttendanceDate.setFocusable(true);
-            }
-        });
+        this.populateForm();
+        // this gives us the BACK ARROW on the menu bar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
-    private void populateForm(Attendance attendance, Member mem) {
-        mAttendanceId.setText(attendance.getId() + "");
-        mFullName.setText(mem.getFirstName() + " " + mem.getLastName());
-        mAttendanceDate.setText(attendance.getAttendDate());
+    private void populateForm() {
+        DataHelper dataHelper = null;
+        try {
+            dataHelper = new DataHelper(AttendanceActivity.this);
+            dataHelper.openForRead();
+            Attendance currentAttend = null;
+            Member currentMem = null;
+            if (currentAttendanceId > -1) { // then we're in EDIT MODE
+                currentAttend = dataHelper.getAttendanceRecord(currentAttendanceId);
+                Log.i("Att.popForm", "memId:" + currentMemberId);
+                Log.i("Att.popForm", "AttId:" + currentAttendanceId);
+                currentMem = dataHelper.getMember(currentAttend.getMemberId());
+                currentMemberId = currentAttend.getMemberId();
+                Log.i("AttendDets", "currentAttend Value: " + currentAttend.getId());
+                mAttendanceId.setText(currentAttend.getId() + "");
+                mAttendanceDate.setText(currentAttend.getAttendDate());
+            } else { // we're in NEW ATTENDANCE MODE
+                currentMem = dataHelper.getMember(currentMemberId);
+            }
+            // whether we're in NEW OR EDIT, we still need to populate the member data
+            Log.i("AttendDets", "currentMember Value: " + currentMem.getId());
+            mFullName.setText(currentMem.getFirstName() + " " + currentMem.getLastName());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+        } finally {
+            if (dataHelper != null) dataHelper.close();
+
+        }
+
     }
+
+    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+        Log.i("DatePickFrag", "onDateSet Fired");
+        try {
+            //Member mem = new Member();
+            //adding one to the month
+            // mem.setMemberSince(year + String.format("%02d",(++monthOfYear)) + String.format("%02d",dayOfMonth));
+            Log.i("onDateSet", "year=" + year + "; month=" + monthOfYear + "; day=" + dayOfMonth);
+            String datestring = year + String.format("%02d",(++monthOfYear)) + String.format("%02d",dayOfMonth);
+            SimpleDateFormat sd = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT);
+            //datestring = year + "-" + String.format("%02d",(++monthOfYear)) + "-" + String.format("%02d",dayOfMonth);
+            Log.i("datestring", "datestring: " + datestring);
+            Date dd = sd.parse(datestring);
+            Log.i("dd", "dd: " + dd);
+            // Update AttendDate
+            mAttendanceDate.setText(MySqlHelper.getFormattedDate(datestring));
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -131,48 +174,49 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
             // if in "View" mode, then the pencil is displayed, so switch
             // to checkbox and enter "Edit" mode
-            if (editMode == Constants.VIEW_MODE) {
+            if (editMode == VIEW_MODE) {
 
-                editMode = Constants.EDIT_EXISTING;
+                editMode = EDIT_EXISTING;
                 Log.i("AttendActivity", "1. editMode switched to " + editMode);
                 enableForm();
-            } else if (editMode == Constants.EDIT_NEW || editMode == Constants.EDIT_EXISTING) {
+            } else if (editMode == EDIT_NEW || editMode == EDIT_EXISTING) {
                 // Check form field values
                 String msg = validateForm();
                 if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
-                    // Save Member Data
-                    editMode = Constants.VIEW_MODE;
-                    Log.i("AttendActivity", "2. editMode switched to " + editMode);
-                    disableForm();
+                    // Save Attendance Data
                     Attendance att = new Attendance(currentMemberId);
-                    if (currentMemberId > -1)
-                        att.setMemberId(Integer.parseInt(mAttendanceId.getText().toString()));
-                    if (mAttendanceId != null && mAttendanceId.getText().toString().length() > 0)
-                        att.setId(Integer.parseInt(mAttendanceId.getText().toString()));
-                    if (mAttendanceDate != null && mAttendanceDate.getText().toString().length() > 0)
-                        att.setAttendDate(mAttendanceDate.getText().toString());
+                    att.setAttendDate(mAttendanceDate.getText().toString());
+                    att.setMemberId(currentMemberId);
+                    DataHelper dataHelper = null;
                     try {
-                        DataHelper dataHelper = new DataHelper(AttendanceActivity.this);
+                        dataHelper = new DataHelper(AttendanceActivity.this);
                         dataHelper.open();
                         if (currentAttendanceId > -1) { // then this is an edit of an existing record
+                            att.setId(currentAttendanceId);
                             currentAttendanceId = dataHelper.updateAttend(att);
                         } else { // then this is a new entry
                             currentAttendanceId = dataHelper.createAttend(att);
-
                         }
-                        dataHelper.close();
 
-                        //memberId = mem.createMember(MemberActivity.this);
                         if (currentAttendanceId == -1)
                             throw new Exception("currentAttendanceId is -1, so something went wrong");
                         msgBox("Saved attendance for member " + mFullName.getText(), findViewById(android.R.id.content));
+                        // set back to READ-ONLY MODE:
+                        editMode = VIEW_MODE;
+                        disableForm();
+                        Log.i("AttendActivity", "2. editMode switched to " + editMode);
+
+                        // close out the window and go back to AttendanceListActivity
                         Intent i = new Intent();
                         i.putExtra(MEMBER_ID, currentMemberId);
                         setResult(RESULT_OK, i);
                         finish();
                     } catch (Exception e) {
-                        msgBox("Error creating Member Record: " + e.toString(), findViewById(android.R.id.content));
+                        msgBox("Error creating Attendance Record: " + e.toString(), findViewById(android.R.id.content));
                         e.printStackTrace();
+                    } finally {
+                        if (dataHelper != null) dataHelper.close();
+
                     }
 
                 } else {
@@ -189,22 +233,91 @@ public class AttendanceActivity extends AppCompatActivity implements Constants {
         }
         return super.onOptionsItemSelected(item);
     }
-
     private String validateForm() {
         List<String> msgs = new ArrayList<String>();
         String readableMsg = "";
-        if (mAttendanceDate.getText() == null || mAttendanceDate.getText().length() == 0) {
+        View focusView = null;
+        boolean cancel = false;
+        if (!isDateValid(mAttendanceDate.getText().toString())) {
+            mAttendanceDate.setError(getString(R.string.error_invalid_membersince));
             msgs.add("Attendance Date");
-
-        }
-        for (String msg: msgs) {
+            focusView = mAttendanceDate;
+            cancel = true;
+        }        for (String msg: msgs) {
             readableMsg = readableMsg + ", " + msg;
         }
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        }
         return (readableMsg.length() == 0)?readableMsg:readableMsg + " are invalid";
+    }
+    private boolean isDateValid(String date) {
+        if (date == null) {
+            return false;
+        } else {
+            String d = date.replaceAll("\\D+","");
+            if (d.length() == 8) {
+                try {
+                    // try to parse the date based on the standard format. If there's an exception then
+                    // can't continue
+                    SimpleDateFormat inputDateFormat = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT, Locale.getDefault());
+                    inputDateFormat.parse(d);
+                } catch (ParseException e) {
+                    Log.w("isDateValid", "Date Parse Exception for " + d + ": " + e.toString());
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    @Override
+    public void onClick(View v) {
+        Log.i("MainActivity.onClick: ", "MEMBER SINCE CLICKED");
+        DialogFragment msFragment = new DatePickerFragment();
+        msFragment.show(getSupportFragmentManager(), "datePicker");
+
+    }
+    public static class DatePickerFragment extends DialogFragment
+            implements DatePickerDialog.OnDateSetListener {
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current date as the default date in the picker
+            final Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
+
+            // Create a new instance of DatePickerDialog and return it
+            return new DatePickerDialog(getActivity(), this, year, month, day);
+        }
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+
+            Log.i("DatePickFrag", "onDateSet Fired");
+            try {
+                Log.i("onDateSet", "year=" + year + "; month=" + monthOfYear + "; day=" + dayOfMonth);
+                String datestring = year + String.format("%02d",(++monthOfYear)) + String.format("%02d",dayOfMonth);
+                SimpleDateFormat sd = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT);
+                //datestring = year + "-" + String.format("%02d",(++monthOfYear)) + "-" + String.format("%02d",dayOfMonth);
+                Log.i("datestring", "datestring: " + datestring);
+                Date dd = sd.parse(datestring);
+                Log.i("dd", "dd: " + dd);
+                // update AttendanceDate
+                mAttendanceDate.setText(MySqlHelper.getFormattedDate(datestring));
+
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
     }
     private void msgBox(String msg, View view) {
         Log.e("AttendActivity", msg);
         Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
     }
+
 }

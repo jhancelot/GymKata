@@ -69,8 +69,8 @@ public class Attendance {
             formattedDate = outputDateFormat.format(inputDateFormat.parse(this.attendDate));
 
         } catch (ParseException e) {
-            Log.e("formatDate", "Error formatting date: " + e.toString());
-            e.printStackTrace();
+            Log.w("Att.formatDate", "Warning. Could not format the date: " + this.attendDate +
+                    ". Switching to default format... ");
             formattedDate = this.attendDate;
         }
         Log.i("formatDate", "value of formattedDate: " + formattedDate + "... value of unformatted date: " + this.getAttendDate());

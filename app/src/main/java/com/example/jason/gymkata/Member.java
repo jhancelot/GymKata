@@ -77,6 +77,10 @@ public class Member {
         return phoneNumber;
     }
 
+    public String getFormattedPhone() {
+        return MySqlHelper.getFormattedPhone(this.phoneNumber);
+    }
+
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
