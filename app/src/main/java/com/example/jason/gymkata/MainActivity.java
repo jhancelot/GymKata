@@ -401,10 +401,13 @@ public class MainActivity extends AppCompatActivity
                 if (currentMember != null && currentMember.getId() > -1) {
                     // then continue
                     Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+                    // this code will cause it to auto-launch "edit" mode with just a single click
+                    /*
                     Intent i = new Intent(getBaseContext(), MemberActivity.class);
                     i.putExtra(EDIT_MODE, VIEW_MODE);
                     i.putExtra(MEMBER_ID, currentMember.getId());
                     startActivityForResult(i, 1);
+                    */
                 } else {
                     snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
                 }

@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -156,6 +157,14 @@ public class DataHelper {
         return values;
     }
 
+    public String getTodaysDate(String format) {
+        Calendar c = Calendar.getInstance();
+        System.out.println("Current time => " + c.getTime());
+
+        SimpleDateFormat df = new SimpleDateFormat(format);
+        String formattedDate = df.format(c.getTime());
+        return formattedDate;
+    }
     public void generateSampleData(Context context) {
         // this line is only necessary because we're calling local methods without instantiating
         // this class first (which is where the context is normally passed in)

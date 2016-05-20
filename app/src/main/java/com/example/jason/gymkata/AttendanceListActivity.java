@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -139,6 +138,7 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        Log.i("onOption", "option = " + id);
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_admin_login) {
@@ -155,8 +155,21 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
             i.putExtra(ATTENDANCE_ID, currentAttendance.getId());
             i.putExtra(MEMBER_ID, currentMemberId);
             startActivityForResult(i, 1);
+            return true;
 
-
+        // For some reason the Back arrow on the menu is firing 16908332
+            // which according to the documentation is = R.id.home
+            // but when I print out the value of R.id.home
+            // my environment thinks its "2131558404"
+            // just hard code the constant for now
+        } else if (id == R.id.home || id == 16908332) {
+            Log.i("R.id.home", "Back Arrow on Menu fired, R.id.home value: " + R.id.home);
+            // close out the window and go back to AttendanceListActivity
+            Intent i = new Intent();
+            i.putExtra(MEMBER_ID, currentMemberId);
+            setResult(RESULT_OK, i);
+            finish();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -174,6 +187,17 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
 
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Log.i("ALA.onBack", "onBackPressed event fired");
+        // close out the window and go back to AttendanceListActivity
+        Intent i = new Intent();
+        i.putExtra(MEMBER_ID, currentMemberId);
+        setResult(RESULT_OK, i);
+        finish();
+
     }
 
     @Override

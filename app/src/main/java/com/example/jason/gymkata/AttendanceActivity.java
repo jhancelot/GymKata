@@ -36,7 +36,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
     private static ImageButton mAttDateCalendar;
     private Menu mainMenu;
 
-    private int editMode = Constants.VIEW_MODE;
+    private int editMode = VIEW_MODE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +94,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
                 mAttendanceDate.setText(currentAttend.getAttendDate());
             } else { // we're in NEW ATTENDANCE MODE
                 currentMem = dataHelper.getMember(currentMemberId);
+                // default the attendance date to today's date
+                mAttendanceDate.setText(dataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
             }
             // whether we're in NEW OR EDIT, we still need to populate the member data
             Log.i("AttendDets", "currentMember Value: " + currentMem.getId());
@@ -230,6 +232,14 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
         } else if (id == R.id.action_delete) {
             Log.i("onOption", "DELETE selected");
+        } else if (id == R.id.home || id == 16908332) {
+            Log.i("R.id.home", "Back Arrow on Menu fired, R.id.home value: " + R.id.home);
+            // close out the window and go back to AttendanceListActivity
+            Intent i = new Intent();
+            i.putExtra(MEMBER_ID, currentMemberId);
+            setResult(RESULT_OK, i);
+            finish();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }

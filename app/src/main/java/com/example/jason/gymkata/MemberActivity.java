@@ -9,6 +9,7 @@ import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -123,29 +124,62 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         currentMemberId = i.getLongExtra(MEMBER_ID, -1);
         Log.i("MemberActivity", "editMode=" + editMode);
         Log.i("MemberActivity", "currentMemberId=" + currentMemberId);
-        if (currentMemberId > -1) {
-            try {
-                DataHelper dataHelper = new DataHelper(MemberActivity.this);
-                dataHelper.openForRead();
+        DataHelper dataHelper = null;
+        try {
+            dataHelper = new DataHelper(MemberActivity.this);
+            dataHelper.openForRead();
+            Log.w(MainActivity.class.getName(), "Database successfully opened ");
+            if (currentMemberId > -1) {
                 currentMember = dataHelper.getMember(currentMemberId);
                 populateForm(currentMember);
-                dataHelper.close();
-                Log.w(MainActivity.class.getName(), "Database successfully opened ");
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+            } else { // make sure we're in "new" mode
+                editMode = EDIT_NEW;
+                // default the Member Since date to today's date
+                mMemberSince.setText(dataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
             }
-
-        } else { // make sure we're in "new" mode
-            editMode = Constants.EDIT_NEW;
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+        } finally {
+            if (dataHelper != null) dataHelper.close();
         }
+
 
         // FLOATING ACTION BAR
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(this);
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // This method is used in conjunction with the startActivityForResult method
+        // I used it to call the AttendanceListActivity class
+        // If the user exits that window, we need to go back to the current member
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if(resultCode == RESULT_OK){
+                editMode = data.getIntExtra(EDIT_MODE, VIEW_MODE); // DEFAULT TO VIEW IF NOT EXIST
+                currentMemberId = data.getLongExtra(MEMBER_ID, -1);
+                if (editMode == VIEW_MODE) {
+                    try {
+                        DataHelper dataHelper = new DataHelper(MemberActivity.this);
+                        dataHelper.openForRead();
+                        currentMember = dataHelper.getMember(currentMemberId);
+                        populateForm(currentMember);
+                        dataHelper.close();
+                        Log.w(MainActivity.class.getName(), "Database successfully opened ");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+                    }
+                } else { // ANY OTHER MODE GOES HERE
+                    Log.w("onActResult", "hmmm... unexpected MODE value: " + editMode);
+                }
 
+                //adapter.notifyDataSetChanged();
+
+            }
+        }
+    }
     private void populateForm(Member member) {
         mId.setText(member.getId()+"");
         mFirstName.setText(member.getFirstName());
@@ -286,12 +320,13 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             if (currentMember != null && currentMember.getId() > -1) {
                 // then continue
                 try {
-                    Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
+                    Log.i("MemberActivity", "currentMember.getid: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
 
                     Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
                     i.putExtra(EDIT_MODE, VIEW_MODE);
                     i.putExtra(MEMBER_ID, currentMember.getId());
-                    startActivity(i);
+                    startActivityForResult(i, 1);
+
                 } catch (Exception e) {
                     Log.e("MainActivity.Option", "Error getting Attendance: " + e.toString());
                     e.printStackTrace();
