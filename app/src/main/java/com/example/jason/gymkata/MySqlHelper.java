@@ -6,6 +6,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -114,6 +118,8 @@ public class MySqlHelper extends SQLiteOpenHelper {
     public static String getFormattedPhone(String phoneNumber) {
         String formattedPhone = null;
         if (phoneNumber != null && phoneNumber.length() >=10) {
+            // I've decided to let almost anything through - see remarks in MemberActivity
+            /*
             Log.i("getFormattedPhone", "phoneNumber=" + phoneNumber);
             Log.i("getFormattedPhone", "phoneNumber.substring(3, 6)=" + phoneNumber.substring(3, 6));
             Log.i("getFormattedPhone", "phoneNumber.substring(6, 10)=" + phoneNumber.substring(6, 10));
@@ -122,7 +128,21 @@ public class MySqlHelper extends SQLiteOpenHelper {
             formattedPhone = phoneNumber.substring(0, 3) + PHONE_DELIMITER
                     + phoneNumber.substring(3, 6) + PHONE_DELIMITER
                     + phoneNumber.substring(6, 10);
+                    */
+            /*
+            PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+            try {
+                Log.w("getFormPhone", "Parsing phone number " + phoneNumber + "...");
+                Phonenumber.PhoneNumber objPhone = phoneUtil.parse(phoneNumber, Constants.DEFAULT_COUNTRY_ISO);
+                formattedPhone = phoneUtil.format(objPhone, PhoneNumberUtil.PhoneNumberFormat.RFC3966);
+                Log.w("getFormPhone", "new Formatted phone number " + formattedPhone + "...");
+            } catch (NumberParseException e) {
+                Log.w("isPhoneValid", "Phone Parse Exception for " + phoneNumber + ": " + e.toString());
+            }
+            */
+
         }
+        formattedPhone = phoneNumber;
         return formattedPhone;
 
     }

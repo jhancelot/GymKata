@@ -13,6 +13,7 @@ import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Log;
@@ -26,6 +27,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
+
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,16 +53,16 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private long currentMemberId;
     private Member currentMember;
     private EditText mId;
-    private EditText mLastName;
-    private EditText mFirstName;
+    private TextInputEditText mLastName;
+    private TextInputEditText mFirstName;
 //    private long mDob;
-    private EditText mEmail;
-    private EditText mPhone;
+    private TextInputEditText mEmail;
+    private TextInputEditText mPhone;
    // private String mBeltLevel;
-    private static EditText mMemberSince;
+    private static TextInputEditText mMemberSince;
     private static ImageButton mMemberSinceCalendar;
 
-    private static EditText mDob;
+    private static TextInputEditText mDob;
     private static ImageButton mDobCalendar;
 
     private static final int DIALOG_MEMBERSINCE = 0;
@@ -73,17 +77,18 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_member);
 
         mId = (EditText) findViewById(R.id.etId);
-        mFirstName = (EditText) findViewById(R.id.etFirstName);
-        mLastName = (EditText) findViewById(R.id.etLastName);
-        mEmail = (EditText) findViewById(R.id.etEmail);
-        mPhone = (EditText) findViewById(R.id.etPhone);
+        mFirstName = (TextInputEditText) findViewById(R.id.etFirstName);
+        mLastName = (TextInputEditText) findViewById(R.id.etLastName);
+        mEmail = (TextInputEditText) findViewById(R.id.etEmail);
+        mPhone = (TextInputEditText) findViewById(R.id.etPhone);
+        mPhone.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
         // Date Picker Fragment for Member Since
-        mMemberSince = (EditText) findViewById(R.id.etMemberSince);
+        mMemberSince = (TextInputEditText) findViewById(R.id.etMemberSince);
         mMemberSinceCalendar = (ImageButton) findViewById(R.id.buttMemberSinceCalendar);
         mMemberSinceCalendar.setOnClickListener(this);
 
         // Date Picker Fragment for DOB
-        mDob = (EditText) findViewById(R.id.etDOB);
+        mDob = (TextInputEditText) findViewById(R.id.etDOB);
         mDobCalendar = (ImageButton) findViewById(R.id.buttDobCalendar);
         mDobCalendar.setOnClickListener(this);
 
@@ -134,6 +139,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 populateForm(currentMember);
             } else { // make sure we're in "new" mode
                 editMode = EDIT_NEW;
+                currentMember = new Member();
                 // default the Member Since date to today's date
                 mMemberSince.setText(dataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
             }
@@ -254,9 +260,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 // Check form field values
                 if (editMode == EDIT_NEW) {
                     // default to current date but allow user to change
-                    Calendar c = Calendar.getInstance();
-                    SimpleDateFormat formatter = new SimpleDateFormat(MySqlHelper.DATE_DISPLAY_FORMAT);
-                    mMemberSince.setText(formatter.format(c.getTime()));
+                    mMemberSince.setText(DataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
                 }
                 String msg = validateForm();
                 Log.i("MbrAct", "Message returned from validateForm: " + msg);
@@ -289,15 +293,15 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                         if (currentMemberId == -1)
                             throw new Exception("curMemberId is -1, so something went wrong");
                         if (editMode == EDIT_EXISTING) {
+                            Intent i = new Intent();
+                            i.putExtra(MEMBER_ID, currentMemberId);
+                            i.putExtra(EDIT_MODE, EDIT_EXISTING);
+                            setResult(RESULT_OK, i);
+                            MemberActivity.this.finish();
+                        } else { // editMode must be EDIT_NEW, so close the window and back to list
                             // STAY IN THIS WINDOW AND DISABLE IT
                             editMode = Constants.VIEW_MODE;
                             disableForm();
-                        } else { // editMode must be EDIT_NEW, so close the window and back to list
-                            Intent i = new Intent();
-                            i.putExtra(MEMBER_ID, currentMemberId);
-                            i.putExtra(EDIT_MODE, EDIT_NEW);
-                            setResult(RESULT_OK, i);
-                            MemberActivity.this.finish();
 
                         }
                         msgBox("Saved member " + currentMember.getFirstName() + " " + currentMember.getLastName(), findViewById(android.R.id.content));
@@ -370,7 +374,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             focusView = mLastName;
             cancel = true;
         }
-        if (!isDateValid(mDob.getText().toString())) {
+        if (mDob.getText().toString().length() > 0 && !isDateValid(mDob.getText().toString())) {
             mDob.setError(getString(R.string.error_invalid_dob));
             msgs.add("Email");
             focusView = mDob;
@@ -382,8 +386,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             focusView = mEmail;
             cancel = true;
         }
-        Log.i("valForm", "isDigitsOnly(Phone): " + TextUtils.isDigitsOnly(mPhone.getText()));
-        if (!TextUtils.isDigitsOnly(mPhone.getText())) {
+        if (mPhone.getText().toString().length() > 0 && !isPhoneValid(mPhone.getText().toString())) {
 
             mPhone.setError(getString(R.string.error_invalid_phone));
             msgs.add("Phone number");
@@ -437,16 +440,29 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     private boolean isPhoneValid(String phone) {
         if (phone == null) {
             return false;
-        } else if (phone.contains("(") || phone.contains(")")) {
-            return false;
         } else {
-            String p = phone.replaceAll("\\D+","");
-            if (p.length() == 10) { // north american phone numbers
-                PhoneNumberUtils.formatNumber(phone, DEFAULT_COUNTRY_ISO);
+            if (phone.length() < 10) return false;
+            // after much consideration, I've decided that the user should be encouraged
+            // to format the phone number correctly, but not insist on it.
+            // there may be instances (such as phone Extensions) where they
+            // want to add in their own special characters
+            // so just let anything through.
+            // the PhoneNumberFormattingTextWatcher should help with consistency
 
-            } else {
+            // Native Android package doesn't have a PARSE feature
+            //PhoneNumberUtils.formatNumber(phone, DEFAULT_COUNTRY_ISO);
+            // Lets use this github package instead
+
+            /*
+            PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+            try {
+                Log.w("isPhoneValid", "Parsing phone number " + phone + "...");
+                phoneUtil.parse(phone, DEFAULT_COUNTRY_ISO);
+            } catch (NumberParseException e) {
+                Log.w("isPhoneValid", "Phone Parse Exception for " + phone + ": " + e.toString());
                 return false;
             }
+            */
 
         }
         return true;

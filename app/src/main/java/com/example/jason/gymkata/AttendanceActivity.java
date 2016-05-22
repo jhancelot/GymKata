@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.app.DatePickerDialog;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -32,7 +33,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
     private TextView mFullName;
     private TextView mAttendanceId;
-    private static EditText mAttendanceDate;
+    private static TextInputEditText mAttendanceDate;
     private static ImageButton mAttDateCalendar;
     private Menu mainMenu;
 
@@ -48,7 +49,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
         mFullName = (TextView) findViewById(R.id.tvMemberFullName);
         mAttendanceId = (TextView) findViewById(R.id.tvAttendId);
-        mAttendanceDate = (EditText) findViewById(R.id.etAttendanceDate);
+        mAttendanceDate = (TextInputEditText) findViewById(R.id.etAttendanceDate);
         // Date Picker Fragment for DOB
         mAttDateCalendar = (ImageButton) findViewById(R.id.buttAttDateCalendar);
         mAttDateCalendar.setOnClickListener(this);
@@ -95,7 +96,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
             } else { // we're in NEW ATTENDANCE MODE
                 currentMem = dataHelper.getMember(currentMemberId);
                 // default the attendance date to today's date
-                mAttendanceDate.setText(dataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
+                mAttendanceDate.setText(DataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
             }
             // whether we're in NEW OR EDIT, we still need to populate the member data
             Log.i("AttendDets", "currentMember Value: " + currentMem.getId());

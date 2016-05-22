@@ -97,7 +97,7 @@ public class DataHelper {
             // ensure we have a writable database
             this.open();
             ContentValues values = membertoContentValues(mem);
-            String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
+            String whereClause = MySqlHelper.MEMBER_COLUMN_ID + " =?";
             String[] whereArgs = new String[] {(mem.getId() + "")};
             insertId = database.update(MySqlHelper.TABLE_MEMBER, values, whereClause, whereArgs);
 
@@ -157,7 +157,7 @@ public class DataHelper {
         return values;
     }
 
-    public String getTodaysDate(String format) {
+    public static String getTodaysDate(String format) {
         Calendar c = Calendar.getInstance();
         System.out.println("Current time => " + c.getTime());
 
