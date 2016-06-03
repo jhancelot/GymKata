@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="First Name"
+                android:text="@string/label_firstname"
                 android:id="@+id/textView2"
                 android:layout_column="4"
                 android:layout_gravity="center_vertical" />
@@ -81,7 +81,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Last Name"
+                android:text="@string/label_lastname"
                 android:id="@+id/textView3"
                 android:layout_column="4"
                 android:layout_gravity="center_vertical" />
@@ -108,7 +108,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Date of Birth"
+                android:text="@string/label_dob"
                 android:id="@+id/textView4"
                 android:layout_column="4"
                 android:layout_gravity="center_vertical" />
@@ -143,7 +143,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Email"
+                android:text="@string/label_email"
                 android:id="@+id/textView5"
                 android:layout_column="4"
                 android:layout_gravity="center_vertical" />
@@ -171,7 +171,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Phone"
+                android:text="@string/label_phone"
                 android:id="@+id/textView6"
                 android:layout_column="4"
                 android:layout_gravity="center_vertical" />
@@ -207,7 +207,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Level"
+                android:text="@string/label_belt_level"
                 android:id="@+id/textView7"
                 android:layout_column="4"
                 android:layout_gravity="center_vertical" />
@@ -226,7 +226,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Member Since"
+                android:text="@string/label_membersince"
                 android:id="@+id/textView8"
                 android:layout_column="4"
                 android:layout_gravity="center_vertical" />

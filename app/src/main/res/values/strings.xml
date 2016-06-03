@@ -72,9 +72,30 @@
     <string name="error_invalid_phone">Phone value is invalid</string>
     <string name="error_invalid_membersince">Member Since value is invalid</string>
     <string name="error_invalid_beltlevel">Belt Level value is invalid</string>
+    <string name="label_firstname">First Name</string>
+    <string name="label_lastname">Last Name</string>
+    <string name="label_dob">Date of Birth</string>
+    <string name="label_phone">Phone Number</string>
+    <string name="label_email">Email</string>
+    <string name="label_belt_level">Belt Level</string>
+    <string name="label_membersince">Member Since</string>
+
+    <!-- Attendance Activity -->
+    <string name="label_attendance_for">Attendance for</string>
+    <string name="label_full_name">[Member Name]</string>
+    <string name="label_attendance_date">Attendance Date</string>
+    <string name="label_attendance_id">Attendance ID</string>
+
 
     <!-- Main Activity -->
     <string name="warning_no_member">No member selected. Please select a member.</string>
+    <string name="title_activity_export">Export Data</string>
 
+    <!-- Export Activity -->
+    <string name="export_start_date">Start Date</string>
+    <string name="export_end_date">End Date</string>
+    <string name="export_exp_members">Export Members</string>
+    <string name="export_include_att_totals">Include Attendance Totals</string>
+    <string name="export_exp_attendance">Export Attendance</string>
 
 </resources>

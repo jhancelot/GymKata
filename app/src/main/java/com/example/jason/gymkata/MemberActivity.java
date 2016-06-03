@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.PhoneNumberUtils;
+import android.text.Editable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -27,6 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.text.TextWatcher;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -84,6 +86,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mPhone.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
         // Date Picker Fragment for Member Since
         mMemberSince = (TextInputEditText) findViewById(R.id.etMemberSince);
+        mMemberSince.addTextChangedListener(mDateEntryWatcher);
         mMemberSinceCalendar = (ImageButton) findViewById(R.id.buttMemberSinceCalendar);
         mMemberSinceCalendar.setOnClickListener(this);
 
@@ -467,7 +470,70 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         }
         return true;
     }
+    private TextWatcher mDateEntryWatcher = new TextWatcher() {
 
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            String working = s.toString();
+            boolean isValid = true;
+            // YEAR
+            String enteredYear = null;
+            Log.i("TextWatcher", "working: " + working);
+
+            if (working.length() == 4 && before == 0) {
+
+                enteredYear = working.substring(0,4);
+                Log.i("TextWatcher", "enteredYear: " + enteredYear);
+                int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+                if (Integer.parseInt(enteredYear) > currentYear) {
+                    isValid = false;
+                } else {
+                    working += "-";
+                    mMemberSince.setText(working);
+                    mMemberSince.setSelection(working.length());
+                }
+            } else if (working.length() == 7 && before == 0) { // MONTH
+                String enteredMonth = working.substring(5);
+                Log.i("TextWatcher", "enteredMonth: " + enteredMonth);
+                //enteredMonth = working.substring(5);
+                //Log.i("TextWatcher", "enteredMonth: " + enteredMonth);
+                if ((Integer.parseInt(enteredMonth) < 1 || Integer.parseInt(enteredMonth) > 12)) {
+                    isValid = false;
+                } else {
+                    working += "-";
+                    mMemberSince.setText(working);
+                    mMemberSince.setSelection(working.length());
+                }
+            } else if (working.length() == 10 && before == 0) {  // DAY
+                String enteredDay = working.substring(8);
+                Log.i("TextWatcher", "enteredMonth: " + enteredDay);
+
+                if (Integer.parseInt(enteredDay) < 1 || Integer.parseInt(enteredDay) > 31) {
+                    isValid = false;
+                } else {
+                    mMemberSince.setText(working);
+                    mMemberSince.setSelection(working.length());
+                }
+            } else if (working.length() != 10) {
+                isValid = false;
+            }
+/*
+            if (!isValid) {
+                mMemberSince.setError("Enter a valid date: YYYY-MM-DD");
+            } else {
+                mMemberSince.setError(null);
+            }
+            */
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {}
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+    };
 
     @Override
     public void onClick(View v) {

@@ -19,6 +19,9 @@ public class Member {
     private String email;
     private String beltLevel;
     private String memberSince;
+    private int attendanceTotal;
+
+
 
     public Member() {
     }
@@ -113,6 +116,14 @@ public class Member {
     }
     public void setMemberSince(String memSince) {this.memberSince = memSince;}
 
+    // although not part of the table, we need these to store the total attendance
+    // when we JOIN to the Attendance table
+    public int getAttendanceTotal() {
+        return attendanceTotal;
+    }
 
+    public void setAttendanceTotal(int attendanceTotal) {
+        this.attendanceTotal = attendanceTotal;
+    }
 
 }

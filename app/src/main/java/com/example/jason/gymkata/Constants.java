@@ -19,6 +19,11 @@ public interface Constants {
     public final static String ATTENDANCE_ID = "ATTENDANCE_ID";
     public final static String MEMBER_ID = "MEMBER_ID";
 
+    // REPORT TYPES
+    public final static int MEMBER_REPORT = 0;
+    public final static int MEMBERS_PLUS_TOTALS = 1;
+    public final static int ATTENDANCE_REPORT = 2;
+
     public final static String DEFAULT_COUNTRY_ISO = "CA";
 
     public static final String RESPONSE_YES = "YES";

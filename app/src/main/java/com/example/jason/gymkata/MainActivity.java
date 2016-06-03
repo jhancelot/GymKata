@@ -257,16 +257,9 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_export) {
             Log.i("OnNav", "EXPORT");
-            // Make sure we have permission
-            verifyStoragePermissions(MainActivity.this);
-            if (filePermissionGranted) {
-                Log.i("onNavItem", "File Permissions are granted. Export can begin...");
-                ExportData exportData = new ExportData(MainActivity.this, MySqlHelper.TABLE_MEMBER);
-                exportData.execute();
-            } else {
-                snackMsg("You need to grant file permissions to perform this function",findViewById(android.R.id.content) );
-                Log.w("onNavItem", "Warning... no file permissions granted. No export possible.");
-            }
+            Intent i = new Intent(getBaseContext(), ExportActivity.class);
+            startActivity(i);
+
 
         }
 
@@ -302,13 +295,14 @@ public class MainActivity extends AppCompatActivity
             case R.id.buttDelAll:
                 Log.e("MainActivity.onClick: ", "Deleting all rows...");
                 try {
+                    dataHelper.deleteAllAttendance();
                     dataHelper.deleteAllMembers();
-                    memberList = dataHelper.getAllMembers(MainActivity.this);
-                //    this.refreshListData();
+//                    memberList = dataHelper.getAllMembers(MainActivity.this);
+                    this.refreshListData();
 
-                    adapter.notifyDataSetChanged();
-                    lvMembers.invalidate();
-                    lvMembers.setAdapter(adapter);
+  //                  adapter.notifyDataSetChanged();
+  //                  lvMembers.invalidate();
+  //                  lvMembers.setAdapter(adapter);
                 } catch (Exception e) {
                     Log.e("MainActivity.onClick: ", "Error calling deleteAllMembers: " + e.toString());
                     e.printStackTrace();

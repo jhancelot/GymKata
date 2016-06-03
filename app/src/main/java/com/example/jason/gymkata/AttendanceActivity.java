@@ -92,7 +92,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
                 currentMemberId = currentAttend.getMemberId();
                 Log.i("AttendDets", "currentAttend Value: " + currentAttend.getId());
                 mAttendanceId.setText(currentAttend.getId() + "");
-                mAttendanceDate.setText(currentAttend.getAttendDate());
+                mAttendanceDate.setText(currentAttend.getFormattedAttendDate());
             } else { // we're in NEW ATTENDANCE MODE
                 currentMem = dataHelper.getMember(currentMemberId);
                 // default the attendance date to today's date
@@ -189,6 +189,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
                     // Save Attendance Data
                     Attendance att = new Attendance(currentMemberId);
                     att.setAttendDate(mAttendanceDate.getText().toString());
+                    Log.i("AttAct", "Value of att.getAttDate: " + att.getAttendDate()
+                            + " and att.getFormDate: " + att.getFormattedAttendDate());
                     att.setMemberId(currentMemberId);
                     DataHelper dataHelper = null;
                     try {
