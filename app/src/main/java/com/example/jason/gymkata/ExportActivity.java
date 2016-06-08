@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -21,8 +22,11 @@ import android.widget.ImageButton;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class ExportActivity extends AppCompatActivity implements View.OnClickListener,Constants {
     private static TextInputEditText mStartDate;
@@ -92,25 +96,33 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                 verifyStoragePermissions(ExportActivity.this);
                 if (filePermissionGranted) {
                     Log.i("onNavItem", "File Permissions are granted. Export can begin...");
-                    if (mExportMembers.isChecked()) {
-                        ExportData exportMembers = new ExportData(ExportActivity.this, MEMBER_REPORT);
-                        exportMembers.execute();
-                    }
-                    if (mExportAttendance.isChecked()) {
-                        ExportData exportAttendance = new ExportData(ExportActivity.this, ATTENDANCE_REPORT);
-                        exportAttendance.setStartDate(mStartDate.getText().toString());
-                        exportAttendance.setEndDate(mEndDate.getText().toString());
-                        exportAttendance.execute();
-                    }
-                    if (mIncludeAttTotals.isChecked()) {
-                        ExportData exportAttendance = new ExportData(ExportActivity.this, MEMBERS_PLUS_TOTALS);
-                        exportAttendance.setStartDate(mStartDate.getText().toString());
-                        exportAttendance.setEndDate(mEndDate.getText().toString());
-                        exportAttendance.execute();
-                    }
+                    String msg = validateForm();
+                    Log.i("MbrAct", "Message returned from validateForm: " + msg);
 
+                    if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
+
+                        if (mExportMembers.isChecked()) {
+                            ExportData exportMembers = new ExportData(ExportActivity.this, MEMBER_REPORT);
+                            exportMembers.execute();
+                        }
+                        if (mExportAttendance.isChecked()) {
+                            ExportData exportAttendance = new ExportData(ExportActivity.this, ATTENDANCE_REPORT);
+                            exportAttendance.setStartDate(mStartDate.getText().toString());
+                            exportAttendance.setEndDate(mEndDate.getText().toString());
+                            exportAttendance.execute();
+                        }
+                        if (mIncludeAttTotals.isChecked()) {
+                            ExportData exportAttendance = new ExportData(ExportActivity.this, MEMBERS_PLUS_TOTALS);
+                            exportAttendance.setStartDate(mStartDate.getText().toString());
+                            exportAttendance.setEndDate(mEndDate.getText().toString());
+                            exportAttendance.execute();
+                        }
+                    } else {
+                        // use this syntax to access the current "View"
+                        msgBox(msg, findViewById(android.R.id.content));
+                    }
                 } else {
-                    snackMsg("You need to grant file permissions to perform this function",findViewById(android.R.id.content) );
+                    snackMsg("You need to grant file permissions to perform this function", findViewById(android.R.id.content));
                     Log.w("onNavItem", "Warning... no file permissions granted. No export possible.");
                 }
 
@@ -120,6 +132,12 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
 
         }
     }
+    private void msgBox(String msg, View view) {
+        Log.e("MbrActivity", msg);
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -145,6 +163,54 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+    private String validateForm() {
+        List<String> msgs = new ArrayList<String>();
+        String readableMsg = "";
+        View focusView = null;
+        boolean cancel = false;
+        if (mStartDate.getText().toString().length() > 0 && !isDateValid(mStartDate.getText().toString())) {
+            mStartDate.setError(getString(R.string.error_invalid_dob));
+            msgs.add("Start Date");
+            focusView = mStartDate;
+            cancel = true;
+        }
+
+        if (mEndDate.getText().toString().length() > 0 && !isDateValid(mEndDate.getText().toString())) {
+            mEndDate.setError(getString(R.string.error_invalid_dob));
+            msgs.add("End Date");
+            focusView = mEndDate;
+            cancel = true;
+        }
+        for (String msg: msgs) {
+            readableMsg = readableMsg + ", " + msg;
+        }
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        }
+        return (readableMsg.length() == 0)?readableMsg:readableMsg + " are invalid";
+    }
+    private boolean isDateValid(String date) {
+        if (date == null) {
+            return false;
+        } else {
+            String d = date.replaceAll("\\D+","");
+            if (d.length() == 8) {
+                try {
+                    // try to parse the date based on the standard format. If there's an exception then
+                    // can't continue
+                    SimpleDateFormat inputDateFormat = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT, Locale.getDefault());
+                    inputDateFormat.parse(d);
+                } catch (ParseException e) {
+                    Log.w("isDateValid", "Date Parse Exception for " + d + ": " + e.toString());
+                    return false;
+                }
+            }
+
+        }
+        return true;
     }
     public void verifyStoragePermissions(Activity activity) {
         // Check if we have write permission

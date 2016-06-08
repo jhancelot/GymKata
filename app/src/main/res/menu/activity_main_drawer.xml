@@ -8,17 +8,17 @@
             android:icon="@drawable/ic_group_add_24dp"
             android:title="@string/nav_drawer_generate_members" />
         <item
-            android:id="@+id/nav_runmode"
+            android:id="@+id/nav_list_all"
             android:icon="@drawable/ic_menu_slideshow"
             android:title="@string/nav_drawer_run_mode" />
         <item
-            android:id="@+id/nav_members"
+            android:id="@+id/nav_delete_all"
             android:icon="@drawable/ic_menu_manage"
             android:title="@string/nav_drawer_members" />
-        <item
+        <!--item
             android:id="@+id/nav_attendance"
             android:icon="@drawable/ic_menu_manage"
-            android:title="@string/nav_drawer_attendance" />
+            android:title="@string/nav_drawer_attendance" /-->
 
     </group>
 

@@ -23,11 +23,13 @@ import java.util.List;
 public class DataHelper {
     private SQLiteDatabase database;
     private MySqlHelper dbHelper;
+/*
     private String[] member_cols = {MySqlHelper.MEMBER_COLUMN_ID, MySqlHelper.MEMBER_COLUMN_FIRSTNAME, MySqlHelper.MEMBER_COLUMN_LASTNAME,
        MySqlHelper.MEMBER_COLUMN_DOB, MySqlHelper.MEMBER_COLUMN_EMAIL, MySqlHelper.MEMBER_COLUMN_PHONE, MySqlHelper.MEMBER_COLUMN_BELT_LEVEL,
         MySqlHelper.MEMBER_MEMBERSINCE};
-    private String[] attendance_cols = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
 
+    private String[] attendance_cols = {MySqlHelper.ATTEND_COLUMN_ID, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, MySqlHelper.ATTEND_COLUMN_MEMBER_ID};
+*/
 
     public DataHelper(Context context) {
         dbHelper = new MySqlHelper(context);
@@ -149,6 +151,38 @@ public class DataHelper {
             e.printStackTrace();
         }
         return insertId;
+
+    }
+    public long checkForExistingAttend(Attendance proposedAttend) {
+        long attendanceId = -1;
+        Cursor cur = null;
+        try {
+            String whereClause = MySqlHelper.ATTEND_COLUMN_MEMBER_ID + " =?";
+            String[] whereArgs = new String[] {(proposedAttend.getMemberId() + "")};
+            cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, whereClause, whereArgs, null, null, null);
+            cur.moveToFirst();
+            while (!cur.isAfterLast()) {
+                Attendance att = cursorToAttendance(cur);
+                Log.i("checkExistAtt", "att.getAttDate=" + att.getAttendDate() + " and propAtt.getAttDate=" + proposedAttend.getAttendDate());
+                if (att != null && att.getAttendDate() != null && att.getAttendDate().equals(proposedAttend.getAttendDate())) {
+                    attendanceId = att.getId();
+                    Log.w("checkexistAtt", "Warning - the member " + proposedAttend.getMemberId() + " has already signed in on " + proposedAttend.getAttendDate());
+                    break;
+                } else {
+                    Log.i("checkExistAtt", "The member " + att.getMemberId() + " has not signed in today.");
+                }
+
+                cur.moveToNext();
+            }
+
+
+        } catch (Exception e) {
+            Log.e(DataHelper.class.getName(), "Error UPDATING database: " + e.toString());
+            e.printStackTrace();
+        } finally {
+            if (cur != null) cur.close();
+        }
+        return attendanceId;
 
     }
     public ContentValues attendToContentValues(Attendance attend) {
@@ -298,7 +332,7 @@ public class DataHelper {
         List<Member> members = new ArrayList<Member>();
         if (database == null || !database.isReadOnly()) database = dbHelper.getReadableDatabase();
         // This will retrieve all data in the Member table and order by LASTNAME
-        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, null, null, null, null, MySqlHelper.MEMBER_COLUMN_LASTNAME);
+        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, MySqlHelper.MEMBER_COLS, null, null, null, null, MySqlHelper.MEMBER_COLUMN_LASTNAME);
         cur.moveToFirst();
         while (!cur.isAfterLast()) {
             Member mem = cursorToMember(cur);
@@ -373,10 +407,10 @@ public class DataHelper {
         // initialize to -1
         mem.setId(-1);
         Log.e("DataHelper.getMember", "getting member...");
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        //SQLiteDatabase db = dbHelper.getReadableDatabase();
         String whereClause = MySqlHelper.MEMBER_COLUMN_ID + " =?";
         String[] whereArgs = new String[] {(memberId + "")};
-        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, member_cols, whereClause, whereArgs, null, null, null);
+        Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, MySqlHelper.MEMBER_COLS, whereClause, whereArgs, null, null, null);
         if (cur.moveToFirst()) {
             Log.e("DataHelper.listAll", "ID:" + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_ID))
                             + "; First Name: " + cur.getString(cur.getColumnIndex(MySqlHelper.MEMBER_COLUMN_FIRSTNAME))
@@ -403,7 +437,7 @@ public class DataHelper {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String whereClause = MySqlHelper.ATTEND_COLUMN_ID + " =?";
         String[] whereArgs = new String[] {(attendanceId + "")};
-        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, attendance_cols, whereClause, whereArgs, null, null, null);
+        Cursor cur = database.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, whereClause, whereArgs, null, null, null);
         if (cur.moveToFirst()) {
             Log.e("getAttRec", "ID:" + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ID))
                             + "; Att Date: " + cur.getString(cur.getColumnIndex(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE))

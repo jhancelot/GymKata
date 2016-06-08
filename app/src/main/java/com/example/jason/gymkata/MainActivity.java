@@ -87,12 +87,6 @@ public class MainActivity extends AppCompatActivity
       //  dataHelper.close();
 
         // Add the buttons
-        Button buttList = (Button) findViewById(R.id.buttList);
-        buttList.setOnClickListener(this);
-
-        Button buttDelAll = (Button) findViewById(R.id.buttDelAll);
-        buttDelAll.setOnClickListener(this);
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
 
@@ -223,32 +217,18 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_generate_members) {
             // Handle Login
             Log.e("MainActivity.onClick", "Generating member rows...");
-            DataHelper dataHelper = new DataHelper(this);
+            DataHelper dataHelper = null;
             try {
+                dataHelper = new DataHelper(this);
                 dataHelper.open();
                 dataHelper.generateSampleData(MainActivity.this);
-                dataHelper.close();
-                Log.w(MainActivity.class.getName(), "Database successfully opened ");
             } catch (SQLException e) {
                 e.printStackTrace();
                 Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+            } finally {
+                if (dataHelper != null) dataHelper.close();
             }
             this.refreshListData();
-        } else if (id == R.id.nav_runmode) {
-            // Handle the RUN MODE action
-            Intent i = new Intent(getBaseContext(), RunModeActivity.class);
-            startActivity(i);
-            Log.i("OnNav","RUN MODE");
-
-        } else if (id == R.id.nav_members) {
-            Log.i("OnNav","EDIT MEMBERS");
-            Intent i = new Intent(getBaseContext(), MemberActivity.class);
-            startActivity(i);
-
-        } else if (id == R.id.nav_attendance) {
-            Log.i("OnNav","EDIT ATTENDANCE");
-            Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
-            startActivity(i);
 
         } else if (id == R.id.nav_import) {
             Intent i = new Intent(getBaseContext(), TestDatePickerActivity.class);
@@ -260,12 +240,41 @@ public class MainActivity extends AppCompatActivity
             Intent i = new Intent(getBaseContext(), ExportActivity.class);
             startActivity(i);
 
+        } else if (id == R.id.nav_list_all) {
+            Log.e("MainActivity.onClick: ", "Listing all rows...");
+            DataHelper dataHelper = null;
+            try {
+                dataHelper = new DataHelper(this);
+                dataHelper.open();
+                dataHelper.listMembersToLog(MainActivity.this);
+                dataHelper.listAttendanceToLog();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+            } finally {
+                if (dataHelper != null) dataHelper.close();
+            }
 
+        } else if (id == R.id.nav_delete_all) {
+            Log.e("MainActivity.onClick: ", "Deleting all rows...");
+            DataHelper dataHelper = null;
+            try {
+                dataHelper = new DataHelper(this);
+                dataHelper.open();
+                dataHelper.deleteAllAttendance();
+                dataHelper.deleteAllMembers();
+                this.refreshListData();
+            } catch (Exception e) {
+                Log.e("MainActivity.onClick: ", "Error calling deleteAllMembers: " + e.toString());
+                e.printStackTrace();
+            } finally {
+                if (dataHelper != null) dataHelper.close();
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+            drawer.closeDrawer(GravityCompat.START);
+            return true;
     }
 
     @Override
@@ -284,6 +293,7 @@ public class MainActivity extends AppCompatActivity
 
         // check which widget was clicked
         switch (v.getId()) {
+            /*
             case R.id.buttList:
                 Log.e("MainActivity.onClick: ", "Listing all rows...");
                 dataHelper.listMembersToLog(MainActivity.this);
@@ -308,7 +318,7 @@ public class MainActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 break;
-
+*/
 /*            case R.id.buttDelOne:
                 Log.e("MainActivity.onClick: ", "Deleting one row...");
                 try {

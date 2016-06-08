@@ -131,17 +131,24 @@ public class RunModeActivity extends AppCompatActivity {
                         long attendId = -1;
                         DataHelper dataHelper = new DataHelper(RunModeActivity.this);
                         dataHelper.open();
-                        attendId = dataHelper.createAttend(att);
-                        dataHelper.close();
-                        //attendId = att.createAttend(RunModeActivity.this);
-                        if (attendId == -1) throw new Exception("attendId is -1, so something went wrong");
-                        Snackbar.make(view, "Welcome " + currentMember.getFirstName() + " " + currentMember.getLastName() + "!", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
+                        // first check to see if they have already signed in today
+                        attendId = dataHelper.checkForExistingAttend(att);
+                        if (attendId == -1) {
+                            attendId = dataHelper.createAttend(att);
+                            if (attendId == -1) throw new Exception("attendId is -1, so something went wrong");
+                            Snackbar.make(view, "Welcome " + currentMember.getFirstName() + " " + currentMember.getLastName() + "!", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                        } else { // then the person is trying to sign-in twice on the same day
+                            Snackbar.make(view, currentMember.getFirstName() + " " + currentMember.getLastName() + " has already signed in today!", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
+                        }
                     } catch (Exception e) {
                         Snackbar.make(view, "An error occurred attempting to sign you in...", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                         Log.e("RunMode", "Error creating Attendance Record: " + e.toString());
                         e.printStackTrace();
+                    } finally {
+                        if (dataHelper != null) dataHelper.close();
                     }
                 } else {
                     Snackbar.make(view, "No member selected. Select a member and try again.", Snackbar.LENGTH_LONG)

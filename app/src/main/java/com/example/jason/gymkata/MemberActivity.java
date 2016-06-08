@@ -92,6 +92,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
 
         // Date Picker Fragment for DOB
         mDob = (TextInputEditText) findViewById(R.id.etDOB);
+        mDob.addTextChangedListener(mDateEntryWatcher);
         mDobCalendar = (ImageButton) findViewById(R.id.buttDobCalendar);
         mDobCalendar.setOnClickListener(this);
 
@@ -217,10 +218,12 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mFirstName.setEnabled(true);
         mLastName.setEnabled(true);
         mDob.setEnabled(true);
+        mDobCalendar.setEnabled(true);
         mEmail.setEnabled(true);
         mPhone.setEnabled(true);
         mSpinBeltLevel.setEnabled(true);
         mMemberSince.setEnabled(true);
+        mMemberSinceCalendar.setEnabled(true);
         // set to Checkmark icon
         mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_save));
 
@@ -230,10 +233,12 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mFirstName.setEnabled(false);
         mLastName.setEnabled(false);
         mDob.setEnabled(false);
+        mDobCalendar.setEnabled(false);
         mEmail.setEnabled(false);
         mPhone.setEnabled(false);
         mSpinBeltLevel.setEnabled(false);
         mMemberSince.setEnabled(false);
+        mMemberSinceCalendar.setEnabled(false);
         // set to Pencil icon
         mainMenu.getItem(1).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
 
@@ -295,16 +300,16 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                         //memberId = mem.createMember(MemberActivity.this);
                         if (currentMemberId == -1)
                             throw new Exception("curMemberId is -1, so something went wrong");
-                        if (editMode == EDIT_EXISTING) {
+                        if (editMode == EDIT_EXISTING || editMode == EDIT_NEW) {
                             Intent i = new Intent();
                             i.putExtra(MEMBER_ID, currentMemberId);
                             i.putExtra(EDIT_MODE, EDIT_EXISTING);
                             setResult(RESULT_OK, i);
                             MemberActivity.this.finish();
-                        } else { // editMode must be EDIT_NEW, so close the window and back to list
+              //          } else { // editMode must be EDIT_NEW, so close the window and back to list
                             // STAY IN THIS WINDOW AND DISABLE IT
-                            editMode = Constants.VIEW_MODE;
-                            disableForm();
+              //              editMode = Constants.VIEW_MODE;
+                 //           disableForm();
 
                         }
                         msgBox("Saved member " + currentMember.getFirstName() + " " + currentMember.getLastName(), findViewById(android.R.id.content));
@@ -377,9 +382,10 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             focusView = mLastName;
             cancel = true;
         }
+        Log.i("valForm", "mDob.getText().toString:" + mDob.getText().toString() + " ; isDateValid(same): " + isDateValid(mDob.getText().toString()));
         if (mDob.getText().toString().length() > 0 && !isDateValid(mDob.getText().toString())) {
             mDob.setError(getString(R.string.error_invalid_dob));
-            msgs.add("Email");
+            msgs.add("Dob");
             focusView = mDob;
             cancel = true;
         }
@@ -423,17 +429,23 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         if (date == null) {
             return false;
         } else {
-            String d = date.replaceAll("\\D+","");
-            if (d.length() == 8) {
+            String strDate = date.replaceAll("\\D+","");
+            if (strDate.length() == 8) {
                 try {
                     // try to parse the date based on the standard format. If there's an exception then
                     // can't continue
                     SimpleDateFormat inputDateFormat = new SimpleDateFormat(MySqlHelper.DATE_SQL_FORMAT, Locale.getDefault());
-                    inputDateFormat.parse(d);
+                    Date d = inputDateFormat.parse(strDate);
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(d);
+                    Log.i("isDatVal", "Year=" + c.get(Calendar.YEAR) + "; Month=" + c.get(Calendar.MONTH) + "; Day=" + c.get(Calendar.MONTH));
+                    if (d == null) throw new ParseException("Invalid Date", 0);
                 } catch (ParseException e) {
-                    Log.w("isDateValid", "Date Parse Exception for " + d + ": " + e.toString());
+                    Log.w("isDateValid", "Date Parse Exception for " + strDate + ": " + e.toString());
                     return false;
                 }
+            } else {
+                return false;
             }
 
         }
@@ -487,6 +499,8 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 int currentYear = Calendar.getInstance().get(Calendar.YEAR);
                 if (Integer.parseInt(enteredYear) > currentYear) {
                     isValid = false;
+                } else if (isDateValid(enteredYear + "0101")) { // check if year is valid
+                    isValid = false;
                 } else {
                     working += "-";
                     mMemberSince.setText(working);
@@ -517,13 +531,13 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             } else if (working.length() != 10) {
                 isValid = false;
             }
-/*
+
             if (!isValid) {
                 mMemberSince.setError("Enter a valid date: YYYY-MM-DD");
             } else {
                 mMemberSince.setError(null);
             }
-            */
+
 
         }
 
