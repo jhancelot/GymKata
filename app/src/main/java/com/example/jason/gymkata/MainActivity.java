@@ -372,18 +372,21 @@ public class MainActivity extends AppCompatActivity
 
     private void refreshListData() {
         Log.e("refreshListData()", "refreshing list data...");
-        DataHelper dataHelper = new DataHelper(this);
+        DataHelper dataHelper = null;
         try {
+            dataHelper = new DataHelper(this);
             dataHelper.openForRead();
             Log.i(MainActivity.class.getName(), "Database successfully opened ");
+            // POPULATE THE LISTVIEW WIDGET with the LastName and the FirstName out of the Members List
+            memberList = dataHelper.getAllMembers(this);
         } catch (SQLException e) {
             e.printStackTrace();
             Log.e(MainActivity.class.getName(), "Error opening database: " + e);
+        } finally {
+            if (dataHelper != null) dataHelper.close();
         }
 
-        // POPULATE THE LISTVIEW WIDGET with the LastName and the FirstName out of the Members List
-        memberList = dataHelper.getAllMembers(this);
-        dataHelper.close();
+
         lvMembers = (ListView) findViewById(R.id.lvMembers);
         adapter = new ArrayAdapter<Member>(this, android.R.layout.simple_list_item_1, memberList);
 

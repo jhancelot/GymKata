@@ -29,7 +29,10 @@
         <SearchView
             android:layout_width="316dp"
             android:layout_height="wrap_content"
-            android:id="@+id/svAttendByName" />
+            android:id="@+id/svAttendFilter"
+            android:inputType="date"
+            android:queryHint="@string/searchview_hint_attendance"
+            />
 
 
     </LinearLayout>
@@ -41,7 +44,7 @@
         android:layout_gravity="center_horizontal">
 
         <ListView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="320dp"
             android:id="@+id/lvAttendance"
             android:choiceMode="singleChoice"

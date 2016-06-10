@@ -185,6 +185,17 @@ public class DataHelper {
         return attendanceId;
 
     }
+    public void deleteAttendance(long attendId) throws SQLException {
+        Log.e("DataHelper.deleteMember", "Deleting attendance id: " + attendId);
+        try {
+            database.delete(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLUMN_ID + " = " + attendId, null);
+        } catch (Exception e) {
+            Log.e(DataHelper.class.getName(), "Error in deleteAttendance: " + e.toString());
+            e.printStackTrace();
+            throw new SQLException(e);
+        }
+    }
+
     public ContentValues attendToContentValues(Attendance attend) {
         ContentValues values = new ContentValues();
         values.put(MySqlHelper.ATTEND_COLUMN_ATTEND_DATE, attend.getAttendDate());
@@ -502,10 +513,12 @@ public class DataHelper {
             if (memberId != 00 && memberId != -1) {
                 String whereClause = MySqlHelper.ATTEND_COLUMN_MEMBER_ID + " =?";
                 String[] whereArgs = new String[]{(memberId + "")};
-                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, whereClause, whereArgs, null, null, null);
+                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, whereClause, whereArgs,
+                        null, null, MySqlHelper.ATTEND_COLUMN_ATTEND_DATE);
 
             } else {
-                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, null, null, null, null, null);
+                cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, null, null,
+                        null, null, null);
 
             }
 

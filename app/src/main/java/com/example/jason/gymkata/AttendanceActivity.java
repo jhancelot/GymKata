@@ -1,6 +1,8 @@
 package com.example.jason.gymkata;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -36,7 +38,6 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
     private static TextInputEditText mAttendanceDate;
     private static ImageButton mAttDateCalendar;
     private Menu mainMenu;
-
     private int editMode = VIEW_MODE;
 
     @Override
@@ -48,8 +49,10 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         setSupportActionBar(toolbar);
 
         mFullName = (TextView) findViewById(R.id.tvMemberFullName);
+        // the ID and ID Label are set as Invisible in the content xml file
         mAttendanceId = (TextView) findViewById(R.id.tvAttendId);
         mAttendanceDate = (TextInputEditText) findViewById(R.id.etAttendanceDate);
+        mAttendanceDate.setOnClickListener(this);
         // Date Picker Fragment for DOB
         mAttDateCalendar = (ImageButton) findViewById(R.id.buttAttDateCalendar);
         mAttDateCalendar.setOnClickListener(this);
@@ -153,6 +156,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         //mAttendanceDate.setFocusableInTouchMode(true);
         //mAttendanceDate.setFocusable(true);
         mAttendanceDate.setEnabled(true);
+        mAttDateCalendar.setEnabled(true);
 
     }
 
@@ -163,6 +167,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         // setEnabled works good but the letters are greyed out.
         //mAttendanceDate.setFocusable(false);
         mAttendanceDate.setEnabled(false);
+        mAttDateCalendar.setEnabled(false);
 
     }
     @Override
@@ -235,6 +240,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
         } else if (id == R.id.action_delete) {
             Log.i("onOption", "DELETE selected");
+            this.deleteAttendance();
         } else if (id == R.id.home || id == 16908332) {
             Log.i("R.id.home", "Back Arrow on Menu fired, R.id.home value: " + R.id.home);
             // close out the window and go back to AttendanceListActivity
@@ -289,10 +295,66 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        Log.i("MainActivity.onClick: ", "MEMBER SINCE CLICKED");
-        DialogFragment msFragment = new DatePickerFragment();
-        msFragment.show(getSupportFragmentManager(), "datePicker");
+        DialogFragment msFragment = null;
+        switch (v.getId()) {
+            case R.id.buttAttDateCalendar:
+                Log.i("AttAct.onClick: ", "ATTENDANCE DATE PICKER CLICKED");
+                msFragment = new DatePickerFragment();
+                msFragment.show(getSupportFragmentManager(), "datePicker");
+                break;
+            case R.id.etAttendanceDate:
+                Log.i("AttAct.onClick: ", "ATTENDANCE DATE PICKER CLICKED");
+                msFragment = new DatePickerFragment();
+                msFragment.show(getSupportFragmentManager(), "datePicker");
+                break;
+        }
+    }
 
+    private void msgBox(String msg, View view) {
+        Log.e("AttendActivity", msg);
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+    }
+    private void deleteAttendance() {
+        // ASSUME THE USER CANCELLED the request
+        AlertDialog.Builder alert = new AlertDialog.Builder(AttendanceActivity.this);
+        alert.setTitle(this.getTitle() + " decision");
+        alert.setMessage("Are you sure you want to delete this attendance record?");
+        alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("AttAct.delAtt", "YES clicked...");
+                try {
+                    DataHelper dataHelper = new DataHelper(AttendanceActivity.this);
+                    dataHelper.open();
+                    dataHelper.deleteAttendance(currentAttendanceId);
+                    dataHelper.close();
+
+                    // set up the calling Intent (AttendanceListActivity) so that it knows to recreate the adapter
+                    // for the list box
+                    Intent i = new Intent();
+                    i.putExtra(MEMBER_ID, currentMemberId);
+                    i.putExtra(EDIT_MODE, DELETE_EXISTING);
+                    setResult(RESULT_OK, i);
+
+                    AttendanceActivity.this.finish();
+                } catch (Exception e) {
+                    Log.e("AttAct.delAtt", e.toString());
+                    e.printStackTrace();
+
+                }
+            }
+        });
+
+        alert.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("MemAct.delMem", "NO clicked...");
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = alert.create();
+        dialog.show();
     }
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -326,11 +388,6 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
                 e.printStackTrace();
             }
         }
-    }
-    private void msgBox(String msg, View view) {
-        Log.e("AttendActivity", msg);
-        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
     }
 
 }

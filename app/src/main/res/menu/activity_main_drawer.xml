@@ -10,11 +10,11 @@
         <item
             android:id="@+id/nav_list_all"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="@string/nav_drawer_run_mode" />
+            android:title="@string/nav_drawer_list_members" />
         <item
             android:id="@+id/nav_delete_all"
             android:icon="@drawable/ic_menu_manage"
-            android:title="@string/nav_drawer_members" />
+            android:title="@string/nav_drawer_delete_members" />
         <!--item
             android:id="@+id/nav_attendance"
             android:icon="@drawable/ic_menu_manage"

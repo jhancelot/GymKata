@@ -51,14 +51,16 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="@string/label_attendance_id"
                 android:id="@+id/textView1"
-                android:layout_column="4" />
+                android:layout_column="4"
+                android:visibility="invisible" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:id="@+id/tvAttendId"
-                android:layout_column="6" />
+                android:layout_column="6"
+                android:visibility="invisible" />
         </TableRow>
         <TableRow android:layout_width="match_parent" android:layout_height="match_parent">
             <TextView

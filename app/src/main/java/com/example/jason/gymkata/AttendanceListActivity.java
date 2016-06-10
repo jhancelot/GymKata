@@ -1,5 +1,7 @@
 package com.example.jason.gymkata;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -42,7 +44,7 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
         setSupportActionBar(toolbar);
 
         // SEARCH VIEW FIELD
-        searchView = (SearchView) findViewById(R.id.svAttendByName);
+        searchView = (SearchView) findViewById(R.id.svAttendFilter);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -141,21 +143,33 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
         Log.i("onOption", "option = " + id);
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_admin_login) {
-            Log.i("onOption", "Admin Login Selected");
+        if (id == R.id.action_delete) {
+            Log.i("onOption", "DELETE ATTENDANCE SELECTED");
+            if (currentAttendance != null && currentAttendance.getId() > -1) {
+                Log.i("CurrentAtt", "id: " + currentAttendance.getId() + "; Curr Mem: " + currentAttendance.getMemberId());
+                this.deleteAttendanceNoPrompt();
+                this.refreshListData();
+            } else {
+                snackMsg(getString(R.string.warning_no_attendance), findViewById(android.R.id.content));
+            }
             return true;
         } else if (id == R.id.action_save_or_edit) {
             //    MenuItem mi = (MenuItem) findViewById(R.id.action_save);
 
             //    mainMenu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_edit));
             Log.i("onOption", "SAVE OR EDIT selected");
-            Log.i("CurrentAtt", "id: " + currentAttendance.getId() + "; Curr Mem: " + currentAttendance.getMemberId());
-            Intent i = new Intent(getBaseContext(), AttendanceActivity.class);
-            i.putExtra(EDIT_MODE, VIEW_MODE);
-            i.putExtra(ATTENDANCE_ID, currentAttendance.getId());
-            i.putExtra(MEMBER_ID, currentMemberId);
-            startActivityForResult(i, 1);
-            return true;
+            if (currentAttendance != null && currentAttendance.getId() > -1) {
+                Log.i("CurrentAtt", "id: " + currentAttendance.getId() + "; Curr Mem: " + currentAttendance.getMemberId());
+                Intent i = new Intent(getBaseContext(), AttendanceActivity.class);
+                i.putExtra(EDIT_MODE, VIEW_MODE);
+                i.putExtra(ATTENDANCE_ID, currentAttendance.getId());
+                i.putExtra(MEMBER_ID, currentMemberId);
+                startActivityForResult(i, 1);
+                return true;
+            } else {
+                snackMsg(getString(R.string.warning_no_attendance), findViewById(android.R.id.content));
+
+            }
 
         // For some reason the Back arrow on the menu is firing 16908332
             // which according to the documentation is = R.id.home
@@ -215,7 +229,61 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
         */
         return true;
     }
-    public void refreshListData() {
+    private void deleteAttendanceNoPrompt() {
+        Log.i("AttAct.delAttNP", "Deleting Id" + currentAttendance.getId());
+        DataHelper dataHelper = null;
+        try {
+            dataHelper = new DataHelper(AttendanceListActivity.this);
+            dataHelper.open();
+            dataHelper.deleteAttendance(currentAttendance.getId());
+            // Because we deleted the Attendance Record, reset the current Attendance to "unselected"
+            currentAttendance = new Attendance();
+            currentAttendance.setId(-1);
+        } catch (Exception e) {
+            Log.e("AttAct.delAtt", e.toString());
+            e.printStackTrace();
+        } finally {
+            if (dataHelper != null) dataHelper.close();
+        }
+
+    }
+    private void deleteAttendance() {
+        // ASSUME THE USER CANCELLED the request
+        AlertDialog.Builder alert = new AlertDialog.Builder(AttendanceListActivity.this);
+        alert.setTitle(this.getTitle() + " decision");
+        alert.setMessage("Are you sure you want to delete this attendance record?");
+        alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("AttAct.delAtt", "YES clicked...");
+                DataHelper dataHelper = null;
+                try {
+                    dataHelper = new DataHelper(AttendanceListActivity.this);
+                    dataHelper.open();
+                    dataHelper.deleteAttendance(currentAttendance.getId());
+                    // Because we deleted the Attendance Record, reset the current Attendance to "unselected"
+                    currentAttendance = new Attendance();
+                    currentAttendance.setId(-1);
+                } catch (Exception e) {
+                    Log.e("AttAct.delAtt", e.toString());
+                    e.printStackTrace();
+                } finally {
+                    if (dataHelper != null) dataHelper.close();
+                }
+            }
+        });
+
+        alert.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.i("MemAct.delMem", "NO clicked...");
+                dialog.cancel();
+            }
+        });
+        AlertDialog dialog = alert.create();
+        dialog.show();
+    }
+    private void refreshListData() {
         try {
             DataHelper dataHelper = new DataHelper(AttendanceListActivity.this);
             dataHelper.openForRead();
@@ -260,5 +328,9 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
         });
 
     }
+    private void snackMsg(String msg, View view) {
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
 
+    }
 }

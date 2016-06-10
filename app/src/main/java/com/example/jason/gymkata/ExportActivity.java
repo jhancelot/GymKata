@@ -6,6 +6,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
@@ -65,7 +66,10 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
 
         // Checkboxes
         mExportMembers = (CheckBox) findViewById(R.id.cbExportMembers);
+        mExportMembers.setOnClickListener(this);
         mIncludeAttTotals = (CheckBox) findViewById(R.id.cbIncludeAttTotals);
+        mIncludeAttTotals.setOnClickListener(this);
+        mIncludeAttTotals.setEnabled(false);
         mExportAttendance = (CheckBox) findViewById(R.id.cbExportAttendance);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -90,6 +94,14 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                 dialogType = DIALOG_END_DATE;
                 eDateFragment.show(getSupportFragmentManager(), "datePicker");
                 break;
+            case R.id.cbExportMembers:
+                if (mExportMembers.isChecked()) {
+                    mIncludeAttTotals.setEnabled(true);
+                } else {
+                    mIncludeAttTotals.setChecked(false);
+                    mIncludeAttTotals.setEnabled(false);
+                }
+                break;
             case R.id.fab:
                 Log.e("Export.onClick: ", "FLOATING ACTION BAR CLICKED");
                 // Make sure we have permission
@@ -100,6 +112,14 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                     Log.i("MbrAct", "Message returned from validateForm: " + msg);
 
                     if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
+                        msgBox("Exporting data...", findViewById(android.R.id.content));
+                        Log.i("ExportAct", "simulating exporting...");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Log.e("ExportAct", "error executing sleep cycle: " + e.toString());
+                            e.printStackTrace();
+                        }
 
                         if (mExportMembers.isChecked()) {
                             ExportData exportMembers = new ExportData(ExportActivity.this, MEMBER_REPORT);
@@ -117,67 +137,46 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                             exportAttendance.setEndDate(mEndDate.getText().toString());
                             exportAttendance.execute();
                         }
+                        msgBox("Export complete. Data can be found in "
+                                        + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                                findViewById(android.R.id.content));
+
+
                     } else {
                         // use this syntax to access the current "View"
                         msgBox(msg, findViewById(android.R.id.content));
                     }
                 } else {
-                    snackMsg("You need to grant file permissions to perform this function", findViewById(android.R.id.content));
-                    Log.w("onNavItem", "Warning... no file permissions granted. No export possible.");
+                    msgBox("You need to grant file permissions to perform this function", findViewById(android.R.id.content));
+
                 }
 
-                Snackbar.make(v, "Exporting data...", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
                 break;
 
         }
     }
     private void msgBox(String msg, View view) {
-        Log.e("MbrActivity", msg);
+        Log.e("ExportAct", msg);
         Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_EXTERNAL_STORAGE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // file-related task you need to do.
-                    filePermissionGranted = true;
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                    filePermissionGranted = true;
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
     private String validateForm() {
         List<String> msgs = new ArrayList<String>();
         String readableMsg = "";
         View focusView = null;
         boolean cancel = false;
         if (mStartDate.getText().toString().length() > 0 && !isDateValid(mStartDate.getText().toString())) {
-            mStartDate.setError(getString(R.string.error_invalid_dob));
+            mStartDate.setError(getString(R.string.error_invalid_startdate));
             msgs.add("Start Date");
             focusView = mStartDate;
             cancel = true;
         }
 
         if (mEndDate.getText().toString().length() > 0 && !isDateValid(mEndDate.getText().toString())) {
-            mEndDate.setError(getString(R.string.error_invalid_dob));
+            mEndDate.setError(getString(R.string.error_invalid_enddate));
             msgs.add("End Date");
             focusView = mEndDate;
             cancel = true;
@@ -214,7 +213,9 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
     }
     public void verifyStoragePermissions(Activity activity) {
         // Check if we have write permission
+        Log.i("verifyPerm", "Checking to see if we already have permissions...");
         int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Log.i("verifyPerm", "Check done, result permission = " + permission);
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
             // We don't have permission so prompt the user
@@ -223,16 +224,44 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                     PERMISSIONS_STORAGE,
                     REQUEST_EXTERNAL_STORAGE
             );
+            Log.i("verifyPerm", "We are past the requestPermissions call...");
         } else {
             filePermissionGranted = true;
         }
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-    private void snackMsg(String msg, View view) {
-        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show();
+                    // permission was granted, yay! Do the
+                    // file-related task you need to do.
+                    filePermissionGranted = true;
 
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    filePermissionGranted = false;
+                    msgBox("Permission denied. You need to grant file permissions to perform this function",
+                            findViewById(android.R.id.content));
+                }
+                return;
+
+            }
+            default: {
+                Log.w("onReqPerm", "Warning, other requestCode not caught: " + requestCode);
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
+
 
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {

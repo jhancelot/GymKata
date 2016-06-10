@@ -11,8 +11,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.jason.gymkata.ExportActivity"
     tools:showIn="@layout/activity_export"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
 
 
@@ -20,20 +19,31 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="100dp">
+        android:layout_height="wrap_content"
+        android:padding="10dip"
+        android:layout_margin="10dp">
 
-        <CheckBox
-            android:layout_width="162dp"
-            android:layout_height="wrap_content"
-            android:text="@string/export_exp_members"
-            android:id="@+id/cbExportMembers" />
+        <FrameLayout
+            android:layout_width="287dp"
+            android:layout_height="68dp"
+            android:background="@drawable/border"
+            >
 
-        <CheckBox
-            android:layout_width="220dp"
-            android:layout_height="wrap_content"
-            android:text="@string/export_include_att_totals"
-            android:id="@+id/cbIncludeAttTotals"
-            android:layout_marginLeft="20dp" />
+            <CheckBox
+                android:layout_width="162dp"
+                android:layout_height="wrap_content"
+                android:text="@string/export_exp_members"
+                android:id="@+id/cbExportMembers" />
+
+            <CheckBox
+                android:layout_width="220dp"
+                android:layout_height="wrap_content"
+                android:text="@string/export_include_att_totals"
+                android:id="@+id/cbIncludeAttTotals"
+                android:layout_marginLeft="20dp"
+                android:layout_gravity="center_horizontal|bottom" />
+
+        </FrameLayout>
 
         <CheckBox
             android:layout_width="wrap_content"

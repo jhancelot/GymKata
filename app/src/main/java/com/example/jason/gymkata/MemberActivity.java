@@ -41,7 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class MemberActivity extends AppCompatActivity implements View.OnClickListener, Constants {
+public class MemberActivity extends AppCompatActivity implements View.OnClickListener, View.OnFocusChangeListener, Constants {
     private Spinner mSpinBeltLevel;
     private TypedArray beltImages;
     private String[] belts;
@@ -77,7 +77,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_member);
-
+        // the ID and ID Label are set as Invisible in the content xml file
         mId = (EditText) findViewById(R.id.etId);
         mFirstName = (TextInputEditText) findViewById(R.id.etFirstName);
         mLastName = (TextInputEditText) findViewById(R.id.etLastName);
@@ -87,12 +87,14 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         // Date Picker Fragment for Member Since
         mMemberSince = (TextInputEditText) findViewById(R.id.etMemberSince);
         mMemberSince.addTextChangedListener(mDateEntryWatcher);
+        mMemberSince.setOnFocusChangeListener(this);
         mMemberSinceCalendar = (ImageButton) findViewById(R.id.buttMemberSinceCalendar);
         mMemberSinceCalendar.setOnClickListener(this);
 
         // Date Picker Fragment for DOB
         mDob = (TextInputEditText) findViewById(R.id.etDOB);
         mDob.addTextChangedListener(mDateEntryWatcher);
+        mDob.setOnFocusChangeListener(this);
         mDobCalendar = (ImageButton) findViewById(R.id.buttDobCalendar);
         mDobCalendar.setOnClickListener(this);
 
@@ -564,19 +566,30 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         }
 */
         // check which widget was clicked
+        DialogFragment dpFragment = null;
         switch (v.getId()) {
             case R.id.buttDobCalendar:
                 Log.i("MemActivity.onClick: ", "DOB Calendar CLICKED");
-                DialogFragment dobFragment = new DatePickerFragment();
+                dpFragment = new DatePickerFragment();
                 dialogType = DIALOG_DOB;
-                dobFragment.show(getSupportFragmentManager(), "datePicker");
+                dpFragment.show(getSupportFragmentManager(), "datePicker");
+                break;
+            case R.id.etDOB:
+                Log.i("MemActivity.onClick: ", "DOB CLICKED");
                 break;
             case R.id.buttMemberSinceCalendar:
-                Log.i("MemActivity.onClick: ", "MEMBER SINCE CLICKED");
-                DialogFragment msFragment = new DatePickerFragment();
+                Log.i("MemActivity.onClick: ", "MEMBER SINCE CALENDAR CLICKED");
+                dpFragment = new DatePickerFragment();
                 dialogType = DIALOG_MEMBERSINCE;
-                msFragment.show(getSupportFragmentManager(), "datePicker");
+                dpFragment.show(getSupportFragmentManager(), "datePicker");
                 break;
+            case R.id.etMemberSince:
+                Log.i("MemActivity.onClick: ", "MEMBER SINCE CLICKED");
+                //msFragment = new DatePickerFragment();
+                //dialogType = DIALOG_MEMBERSINCE;
+                //msFragment.show(getSupportFragmentManager(), "datePicker");
+                break;
+
             case R.id.fab:
                 Log.e("MainActivity.onClick: ", "FLOATING ACTION BAR CLICKED");
                 Snackbar.make(v, "FLOATING ACTION BAR CLICKED", Snackbar.LENGTH_LONG)
@@ -596,7 +609,21 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         //  dataHelper.close();
 
     }
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        DialogFragment dpFragment = null;
+        if (v.getId() == R.id.etMemberSince && hasFocus) {
+            Log.i("MemActivity.onClick: ", "MEMBER SINCE FOCUS CHANGE");
+            dpFragment = new DatePickerFragment();
+            dialogType = DIALOG_MEMBERSINCE;
+            dpFragment.show(getSupportFragmentManager(), "datePicker");
+        } else if (v.getId() == R.id.etDOB && hasFocus) {
+            dpFragment = new DatePickerFragment();
+            dialogType = DIALOG_DOB;
+            dpFragment.show(getSupportFragmentManager(), "datePicker");
 
+        }
+    }
     private void deleteMember() {
         // ASSUME THE USER CANCELLED the request
         AlertDialog.Builder alert = new AlertDialog.Builder(MemberActivity.this);
@@ -643,6 +670,9 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
     }
+
+
+
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
 
