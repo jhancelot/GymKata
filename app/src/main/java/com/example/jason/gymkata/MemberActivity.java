@@ -86,17 +86,17 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mPhone.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
         // Date Picker Fragment for Member Since
         mMemberSince = (TextInputEditText) findViewById(R.id.etMemberSince);
-        mMemberSince.addTextChangedListener(mDateEntryWatcher);
+        if (mMemberSince != null) mMemberSince.addTextChangedListener(mDateEntryWatcher);
         mMemberSince.setOnFocusChangeListener(this);
         mMemberSinceCalendar = (ImageButton) findViewById(R.id.buttMemberSinceCalendar);
-        mMemberSinceCalendar.setOnClickListener(this);
+        if (mMemberSinceCalendar != null) mMemberSinceCalendar.setOnClickListener(this);
 
         // Date Picker Fragment for DOB
         mDob = (TextInputEditText) findViewById(R.id.etDOB);
-        mDob.addTextChangedListener(mDateEntryWatcher);
+        if (mDob != null) mDob.addTextChangedListener(mDateEntryWatcher);
         mDob.setOnFocusChangeListener(this);
         mDobCalendar = (ImageButton) findViewById(R.id.buttDobCalendar);
-        mDobCalendar.setOnClickListener(this);
+        if (mDobCalendar != null) mDobCalendar.setOnClickListener(this);
 
         // TOOL BAR
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -147,7 +147,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 editMode = EDIT_NEW;
                 currentMember = new Member();
                 // default the Member Since date to today's date
-                mMemberSince.setText(dataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
+                mMemberSince.setText(DataHelper.getTodaysDate(MySqlHelper.DATE_DISPLAY_FORMAT));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -337,7 +337,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                     Log.i("MemberActivity", "currentMember.getid: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
 
                     Intent i = new Intent(getBaseContext(), AttendanceListActivity.class);
-                    i.putExtra(EDIT_MODE, VIEW_MODE);
+                    i.putExtra(EDIT_MODE, EDIT_EXISTING);
                     i.putExtra(MEMBER_ID, currentMember.getId());
                     startActivityForResult(i, 1);
 
@@ -367,7 +367,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private String validateForm() {
-        List<String> msgs = new ArrayList<String>();
+        List<String> msgs = new ArrayList<>();
         String readableMsg = "";
         View focusView = null;
         boolean cancel = false;
@@ -441,7 +441,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                     Calendar c = Calendar.getInstance();
                     c.setTime(d);
                     Log.i("isDatVal", "Year=" + c.get(Calendar.YEAR) + "; Month=" + c.get(Calendar.MONTH) + "; Day=" + c.get(Calendar.MONTH));
-                    if (d == null) throw new ParseException("Invalid Date", 0);
+                    //if (d == null) throw new ParseException("Invalid Date", 0);
                 } catch (ParseException e) {
                     Log.w("isDateValid", "Date Parse Exception for " + strDate + ": " + e.toString());
                     return false;
@@ -491,7 +491,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             String working = s.toString();
             boolean isValid = true;
             // YEAR
-            String enteredYear = null;
+            String enteredYear;
             Log.i("TextWatcher", "working: " + working);
 
             if (working.length() == 4 && before == 0) {
@@ -553,24 +553,18 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        //ArrayAdapter<Member> adapter = (ArrayAdapter<Member>) lvMembers.getAdapter();
-        // OPEN THE DATABASE
-        /*
-        dataHelper = new DataHelper(this);
-        try {
-            dataHelper.open();
-            Log.w(MainActivity.class.getName(), "Database successfully opened ");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            Log.e(MainActivity.class.getName(), "Error opening database: " + e);
-        }
-*/
+
         // check which widget was clicked
-        DialogFragment dpFragment = null;
+        DialogFragment dpFragment;
+        Bundle args;
         switch (v.getId()) {
             case R.id.buttDobCalendar:
                 Log.i("MemActivity.onClick: ", "DOB Calendar CLICKED");
                 dpFragment = new DatePickerFragment();
+                args = new Bundle();
+                args.putString("current_date", mDob.getText().toString());
+                Log.i("onClick", "mDob.getText().toString() = " + mDob.getText().toString());
+                dpFragment.setArguments(args);
                 dialogType = DIALOG_DOB;
                 dpFragment.show(getSupportFragmentManager(), "datePicker");
                 break;
@@ -580,6 +574,10 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.buttMemberSinceCalendar:
                 Log.i("MemActivity.onClick: ", "MEMBER SINCE CALENDAR CLICKED");
                 dpFragment = new DatePickerFragment();
+                args = new Bundle();
+                args.putString("current_date", mMemberSince.getText().toString());
+                Log.i("onClick", "mDob.getText().toString() = " + mMemberSince.getText().toString());
+                dpFragment.setArguments(args);
                 dialogType = DIALOG_MEMBERSINCE;
                 dpFragment.show(getSupportFragmentManager(), "datePicker");
                 break;
@@ -611,14 +609,20 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
     }
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        DialogFragment dpFragment = null;
+        DialogFragment dpFragment;
         if (v.getId() == R.id.etMemberSince && hasFocus) {
             Log.i("MemActivity.onClick: ", "MEMBER SINCE FOCUS CHANGE");
             dpFragment = new DatePickerFragment();
+            Bundle args = new Bundle();
+            args.putString("current_date", mMemberSince.getText().toString());
+            dpFragment.setArguments(args);
             dialogType = DIALOG_MEMBERSINCE;
             dpFragment.show(getSupportFragmentManager(), "datePicker");
         } else if (v.getId() == R.id.etDOB && hasFocus) {
             dpFragment = new DatePickerFragment();
+            Bundle args = new Bundle();
+            args.putString("current_date", mDob.getText().toString());
+            dpFragment.setArguments(args);
             dialogType = DIALOG_DOB;
             dpFragment.show(getSupportFragmentManager(), "datePicker");
 
@@ -628,7 +632,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         // ASSUME THE USER CANCELLED the request
         AlertDialog.Builder alert = new AlertDialog.Builder(MemberActivity.this);
         alert.setTitle(this.getTitle() + " decision");
-        alert.setMessage("Are you sure you want to delete member and all associated attendance?");
+        alert.setMessage(getString(R.string.alert_member_delete));
         alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -678,14 +682,45 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current date as the default date in the picker
+            int year = 0;
+            int month = 0;
+            int day = 0;
+            // Here's the bundle that contains the arguments
+            // if the date is in the bundle, then use it
+            Bundle args = getArguments();
+            String currDate = null;
+            if (args != null) currDate = args.getString("current_date");
+            Log.i("DatePick", "Current Date = " + currDate);
+            String currYear;
+            String currMonth;
+            String currDay;
+            // the date has to resemble a proper date (8 digits with no mask or 10 with mask)
+            if (currDate != null && currDate.length() >= 8) {
+                // strip out the "-" signs and then figure out the year, month, day
+                currDate = currDate.replaceAll("\\D+", "");
+                currYear = currDate.substring(0, 4);
+                currMonth = currDate.substring(4, 6);
+                currDay = currDate.substring(6);
+                //19710508
+                //01234567
+                Log.i("DatePick", "currMonth=" + currMonth);
+                Log.i("DatePick", "currDay=" + currDay);
+                if (currYear.length() == 4) year = Integer.parseInt(currYear);
+                if (currMonth.length() == 2) month = Integer.parseInt(currMonth);
+                if (currDay.length() == 2) day = Integer.parseInt(currDay);
+                Log.i("DatePick", "BEFORE CALENDAR year = " + year + "; month = " + month + "; day = " + day);
+            }
+
+            // otherwise, Use the current date as the default date in the picker
             final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
+            if (year == 0) year = c.get(Calendar.YEAR);
+            if (month == 0) month = c.get(Calendar.MONTH);
+            if (day == 0) day = c.get(Calendar.DAY_OF_MONTH);
+            Log.i("DatePick", "AFTER CALENDAR year = " + year + "; month = " + month + "; day = " + day);
 
             // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), this, year, month, day);
+            // for some reason the month is offset by 1... so subtract it out
+            return new DatePickerDialog(getActivity(), this, year, month - 1, day);
         }
 
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {

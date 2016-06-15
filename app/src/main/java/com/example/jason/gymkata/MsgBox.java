@@ -1,41 +1,60 @@
 package com.example.jason.gymkata;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 /**
  * Created by Jason on 2016-04-15.
  */
-public class MsgBox {
+public class MsgBox extends DialogFragment implements Constants {
     public static final String OK_BUTTON = "OK";
     public static final String YES_NO_BUTTON = "YES_NO";
     public static final String DEFAULT_MSG = "NO MESSAGE SET";
+    public static final String DEFAULT_TITLE = "GYMKATA";
 
-    public static final String RESPONSE_YES = "YES";
-    public static final String RESPONSE_NO = "NO";
-    public static final String RESPONSE_CANCEL = "CANCEL";
-    public static final String RESPONSE_OK = "OK";
+    // Arg types
+    public static final String TITLE = "title";
+    public static final String MESSAGE = "message";
+
+
 
     public String response = null;
-    private String msg;
     private String buttonType;
 
 
     public MsgBox() {
     }
 
-    public MsgBox(String msg, Context con) {
-        buttonType = YES_NO_BUTTON;
-        this.msg(msg, con);
+    public interface NoticeDialogListener {
+        public void onDialogPositiveClick(DialogFragment dialog);
+        public void onDialogNegativeClick(DialogFragment dialog);
+    }
+    // use this instance of the interface to deliver acion events
+    NoticeDialogListener mListener;
+
+    // override the Fragment.onAttach() method to instantiate the NoticeDialogListener
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        // verifiy that the host activity implements the callback interface
+        try {
+            // instantiate the listener so we can send events to host
+            mListener = (NoticeDialogListener) activity;
+        } catch (ClassCastException e) {
+            Log.e("MsgBox.onAtt", "Error: " + e.toString());
+            // the activity doesn't implement the interface so throw exception
+            throw new ClassCastException(activity.toString() + " must implement NoticeDialogListener");
+        }
     }
 
-    public MsgBox(String msg, Context con, String btn) {
-        this.buttonType = btn;
-        this.msg(msg, con);
-    }
     public String getResponse() {
         return response;
     }
@@ -44,6 +63,32 @@ public class MsgBox {
         this.response = response;
     }
 
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+        Bundle args = getArguments();
+        String msg = args.getString("message", "");
+        String title = args.getString("title", "");
+
+        return new AlertDialog.Builder(getActivity())
+                .setTitle(title)
+                .setMessage(msg)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // send the positive button event back to the host activity
+                        mListener.onDialogPositiveClick(MsgBox.this);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // send the negative button event back to the host activity
+                        mListener.onDialogNegativeClick(MsgBox.this);
+                    }
+
+                }).create();
+    }
+/*
     private void msg(String msg, Context con) {
         AlertDialog.Builder builder = new AlertDialog.Builder(con);
         builder.setMessage(msg).setCancelable(false);
@@ -91,4 +136,5 @@ public class MsgBox {
         alert.show();
 
     }
+    */
 }

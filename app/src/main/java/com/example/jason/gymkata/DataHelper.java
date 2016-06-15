@@ -4,8 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.util.Log;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -46,6 +48,26 @@ public class DataHelper {
     public void close() {
         // this call is to the superclass which closes all open databases
         if (dbHelper != null) dbHelper.close();
+    }
+
+    public List<File> getEligibleFiles() {
+        List<File> files = new ArrayList<>();
+        File importFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "");
+        String path = importFolder.getPath();
+        Log.i("getFiles", "checking for existing import folder: " + path);
+        if (!importFolder.exists()) {
+            return null;
+        }
+
+        for (File f : importFolder.listFiles()) {
+            // Only include CSV files with prefix MEMBER or ATTENDANCE in the list of eligible files
+            if ((f.getName().contains("Members") || f.getName().contains("Attendance"))
+                    && f.getName().contains(".csv") && f.length() > 0) { // .length is size of file
+                files.add(f);
+            }
+        }
+        return files;
+
     }
 
     private ContentValues membertoContentValues(Member mem) {
@@ -164,7 +186,7 @@ public class DataHelper {
             while (!cur.isAfterLast()) {
                 Attendance att = cursorToAttendance(cur);
                 Log.i("checkExistAtt", "att.getAttDate=" + att.getAttendDate() + " and propAtt.getAttDate=" + proposedAttend.getAttendDate());
-                if (att != null && att.getAttendDate() != null && att.getAttendDate().equals(proposedAttend.getAttendDate())) {
+                if (att.getAttendDate() != null && att.getAttendDate().equals(proposedAttend.getAttendDate())) {
                     attendanceId = att.getId();
                     Log.w("checkexistAtt", "Warning - the member " + proposedAttend.getMemberId() + " has already signed in on " + proposedAttend.getAttendDate());
                     break;
@@ -213,8 +235,7 @@ public class DataHelper {
         System.out.println("Current time => " + c.getTime());
 
         SimpleDateFormat df = new SimpleDateFormat(format);
-        String formattedDate = df.format(c.getTime());
-        return formattedDate;
+        return df.format(c.getTime());
     }
     public void generateSampleData(Context context) {
         // this line is only necessary because we're calling local methods without instantiating
@@ -222,7 +243,7 @@ public class DataHelper {
         if (dbHelper == null) dbHelper = new MySqlHelper(context);
         DateFormat dateFormat = new SimpleDateFormat(MySqlHelper.DATE_DISPLAY_FORMAT);
         String curDate = dateFormat.format(new Date());
-        long memberId = -1;
+        long memberId;
         Member mem = new Member("Allan", "ADAMS", "WHITE");
 
         mem.setMemberSince(curDate);
@@ -314,7 +335,7 @@ public class DataHelper {
     public void deleteAllMembers() throws SQLException {
         // Now let's execute the SELECT COUNT command
         Log.e(DataHelper.class.getName(), "Sql Statement: " + "DELETE FROM " + MySqlHelper.TABLE_MEMBER);
-        Cursor countCursor = null;
+        Cursor countCursor;
         try {
             countCursor = database.rawQuery("DELETE FROM " + MySqlHelper.TABLE_MEMBER, null);
         } catch (Exception e) {
@@ -340,7 +361,7 @@ public class DataHelper {
         // this line is only necessary because we're calling local methods without instantiating
         // this class first (which is where the context is normally passed in)
         if (dbHelper == null) dbHelper = new MySqlHelper(context);
-        List<Member> members = new ArrayList<Member>();
+        List<Member> members = new ArrayList<>();
         if (database == null || !database.isReadOnly()) database = dbHelper.getReadableDatabase();
         // This will retrieve all data in the Member table and order by LASTNAME
         Cursor cur = database.query(MySqlHelper.TABLE_MEMBER, MySqlHelper.MEMBER_COLS, null, null, null, null, MySqlHelper.MEMBER_COLUMN_LASTNAME);
@@ -359,7 +380,7 @@ public class DataHelper {
         // this line is only necessary because we're calling local methods without instantiating
         // this class first (which is where the context is normally passed in)
         if (dbHelper == null) dbHelper = new MySqlHelper(context);
-        List<Member> members = new ArrayList<Member>();
+        List<Member> members = new ArrayList<>();
         if (database == null || !database.isReadOnly()) database = dbHelper.getReadableDatabase();
         // This will retrieve all data in the Member table and order by LASTNAME
         String selectQuery = "SELECT " + MySqlHelper.TABLE_MEMBER + ".*, Count(*) as 'Total'"
@@ -502,15 +523,15 @@ public class DataHelper {
     public List<Attendance> getAllAttendance(long memberId, Context context) {
         Log.e("DataHelper.getAttend", "getting member attendance...");
         List<Attendance> attendanceList = null;
-        MySqlHelper dbHelper = null;
-        SQLiteDatabase db = null;
-        Cursor cur = null;
+        MySqlHelper dbHelper;
+        SQLiteDatabase db;
+        Cursor cur;
 
         try {
             attendanceList = new ArrayList<Attendance>();
             dbHelper = new MySqlHelper(context);
             db = dbHelper.getReadableDatabase();
-            if (memberId != 00 && memberId != -1) {
+            if (memberId != 0 && memberId != -1) {
                 String whereClause = MySqlHelper.ATTEND_COLUMN_MEMBER_ID + " =?";
                 String[] whereArgs = new String[]{(memberId + "")};
                 cur = db.query(MySqlHelper.TABLE_ATTENDANCE, MySqlHelper.ATTEND_COLS, whereClause, whereArgs,
@@ -540,8 +561,8 @@ public class DataHelper {
     public List<Attendance> getAllAttendance(String startDate, String endDate, Context context) {
         Log.e("DataHelper.getAttend", "getting member attendance between " + startDate + " and " + endDate);
         List<Attendance> attendanceList = null;
-        MySqlHelper dbHelper = null;
-        SQLiteDatabase db = null;
+        MySqlHelper dbHelper;
+        SQLiteDatabase db;
         Cursor cur = null;
 
         try {
@@ -596,7 +617,7 @@ public class DataHelper {
     public void deleteAllAttendance() throws SQLException {
         // Now let's execute the SELECT COUNT command
         Log.e(DataHelper.class.getName(), "Sql Statement: " + "DELETE FROM " + MySqlHelper.TABLE_ATTENDANCE);
-        Cursor countCursor = null;
+        Cursor countCursor;
         try {
             countCursor = database.rawQuery("DELETE FROM " + MySqlHelper.TABLE_ATTENDANCE, null);
         } catch (Exception e) {
@@ -648,7 +669,7 @@ public class DataHelper {
         */
 
         Log.d("validateLogin()b: ", user.get_name() + " " + user.get_password());
-        SystemUser existingUser = null;
+        SystemUser existingUser;
         if (cur != null && cur.getCount() > 0) {
             cur.moveToFirst();
             Log.d("Total Rows: ", cur.getCount() + "");
@@ -656,9 +677,13 @@ public class DataHelper {
             existingUser = new SystemUser(cur.getInt(0), cur.getString(1), cur.getString(2));
             cur.close();
             Log.d("validateLogin()ccid: ", existingUser.get_id() + " " + existingUser.get_name() + " " + existingUser.get_password());
-            if (user.get_name().equals(existingUser.get_name()) && user.get_password().equals(existingUser.get_password())) {
-                loginSuccessful = true;
-            } else {
+            if (user.get_name().equals(existingUser.get_name()))
+                if (user.get_password().equals(existingUser.get_password())) {
+                    loginSuccessful = true;
+                } else {
+                    loginSuccessful = false;
+                }
+            else {
                 loginSuccessful = false;
             }
         } else {

@@ -1,25 +1,6 @@
 <resources>
     <string name="app_name">Chinese Boxing Connection</string>
     <string name="email_address">cbc@uniserve.com</string>
-    <string-array name="belt_level_list">
-        <item>White</item>
-        <item>Yellow</item>
-        <item>Purple</item>
-        <item>Blue</item>
-        <item>Green</item>
-        <item>Brown</item>
-        <item>Black</item>
-    </string-array>
-    <integer-array name="belt_images_list">
-        <item>@drawable/whitebelt</item>
-        <item>@drawable/yellowbelt</item>
-        <item>@drawable/purplebelt</item>
-        <item>@drawable/bluebelt</item>
-        <item>@drawable/greenbelt</item>
-        <item>@drawable/brownbelt</item>
-        <item>@drawable/blackbelt</item>
-
-    </integer-array>
 
     <!-- NAVIGATION DRAWER -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -83,6 +64,26 @@
     <string name="label_email">Email</string>
     <string name="label_belt_level">Belt Level</string>
     <string name="label_membersince">Member Since</string>
+    <string name="alert_member_delete">Are you sure you want to delete the member and all associated attendance records?</string>
+    <string-array name="belt_level_list">
+        <item>White</item>
+        <item>Yellow</item>
+        <item>Purple</item>
+        <item>Blue</item>
+        <item>Green</item>
+        <item>Brown</item>
+        <item>Black</item>
+    </string-array>
+    <integer-array name="belt_images_list">
+        <item>@drawable/whitebelt</item>
+        <item>@drawable/yellowbelt</item>
+        <item>@drawable/purplebelt</item>
+        <item>@drawable/bluebelt</item>
+        <item>@drawable/greenbelt</item>
+        <item>@drawable/brownbelt</item>
+        <item>@drawable/blackbelt</item>
+
+    </integer-array>
 
     <!-- Attendance Activity -->
     <string name="label_attendance_for">Attendance for</string>
@@ -91,6 +92,7 @@
     <string name="label_attendance_id">Attendance ID</string>
     <string name="warning_no_attendance">No Attendance record selected</string>
     <string name="searchview_hint_attendance">[Enter a date to filter]</string>
+    <string name="alert_attendance_delete">Are you sure you want to delete this attendance record?</string>
 
 
     <!-- Main Activity -->
@@ -106,5 +108,17 @@
     <string name="export_exp_attendance">Export Attendance</string>
     <string name="error_invalid_startdate">Start Date is invalid</string>
     <string name="error_invalid_enddate">End Date is invalid</string>
+
+    <!-- Import Activity -->
+    <string name="import_file_prompt">Please select a file:</string>
+    <string name="warning_no_file">No file selected</string>
+    <string name="title_activity_import">Import Member Data</string>
+    <string name="report_type_mismatch">The file you selected does not match the report type selected. Are you sure?</string>
+    <string name="ready_to_import">Ready to import file</string>
+    <string-array name="report_types">
+        <item>Members</item>
+        <item>Members with Totals</item>
+        <item>Attendance</item>
+    </string-array>
 
 </resources>

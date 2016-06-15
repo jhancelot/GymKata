@@ -115,7 +115,7 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
 
         // FLOATING ACTION BUTTON
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        if (fab != null) fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.i("onOption", "New Attendance selected");
@@ -147,8 +147,8 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
             Log.i("onOption", "DELETE ATTENDANCE SELECTED");
             if (currentAttendance != null && currentAttendance.getId() > -1) {
                 Log.i("CurrentAtt", "id: " + currentAttendance.getId() + "; Curr Mem: " + currentAttendance.getMemberId());
-                this.deleteAttendanceNoPrompt();
-                this.refreshListData();
+                //this.deleteAttendanceNoPrompt();
+                this.deleteAttendance();
             } else {
                 snackMsg(getString(R.string.warning_no_attendance), findViewById(android.R.id.content));
             }
@@ -264,6 +264,8 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
                     // Because we deleted the Attendance Record, reset the current Attendance to "unselected"
                     currentAttendance = new Attendance();
                     currentAttendance.setId(-1);
+                    AttendanceListActivity.this.refreshListData();
+
                 } catch (Exception e) {
                     Log.e("AttAct.delAtt", e.toString());
                     e.printStackTrace();
@@ -296,7 +298,7 @@ public class AttendanceListActivity extends AppCompatActivity implements Constan
             }
             dataHelper.close();
             mFullName = (TextView) findViewById(R.id.tvMemberFullName);
-            mFullName.setText("Attendance for: "
+            if (mFullName != null) mFullName.setText("Attendance for: "
                     + currentMem.getFirstName() + " "
                     + currentMem.getLastName());
         } catch (Exception e) {

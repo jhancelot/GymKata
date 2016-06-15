@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity
 
         // Add the buttons
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(this);
+        if (fab != null) fab.setOnClickListener(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        if (navigationView != null) navigationView.setNavigationItemSelectedListener(this);
 
     }
 
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity
                 // then continue
                 Log.i("CurrentMem", "id: " + currentMember.getId() + "; Last Name: " + currentMember.getLastName());
                 Intent i = new Intent(getBaseContext(), MemberActivity.class);
-                i.putExtra(EDIT_MODE, VIEW_MODE);
+                i.putExtra(EDIT_MODE, EDIT_EXISTING);
                 i.putExtra(MEMBER_ID, currentMember.getId());
                 startActivityForResult(i, 1);
             } else {
@@ -192,12 +192,12 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 1) {
             if(resultCode == RESULT_OK){
                 long mode = data.getIntExtra(EDIT_MODE, VIEW_MODE); // DEFAULT TO VIEW IF NOT EXIST
-                long currentMemberId = -1;
+                //long currentMemberId = -1;
                 if (mode == DELETE_EXISTING) {
                     this.refreshListData();
                 } else if (mode == EDIT_EXISTING || mode == EDIT_NEW) {
-                    Log.i("onActResult", "currentMemberId: " + currentMemberId);
-                    currentMemberId = data.getLongExtra(MEMBER_ID, -1);
+                    //Log.i("onActResult", "currentMemberId: " + currentMemberId);
+                    //currentMemberId = data.getLongExtra(MEMBER_ID, -1);
                     this.refreshListData();
                 } else { // ANY OTHER MODE GOES HERE
                     Log.w("onActResult", "hmmm... unexpected MODE value: " + mode);
@@ -231,7 +231,7 @@ public class MainActivity extends AppCompatActivity
             this.refreshListData();
 
         } else if (id == R.id.nav_import) {
-            Intent i = new Intent(getBaseContext(), TestDatePickerActivity.class);
+            Intent i = new Intent(getBaseContext(), ImportActivity.class);
             startActivity(i);
             Log.i("OnNav","IMPORT");
 
@@ -455,7 +455,7 @@ public class MainActivity extends AppCompatActivity
                     // functionality that depends on this permission.
                     filePermissionGranted = true;
                 }
-                return;
+
             }
 
             // other 'case' lines to check for other
@@ -500,7 +500,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
-        } else if (buttonType.equals(YES_NO_BUTTON)) {
+        } else if (buttonType != null && buttonType.equals(YES_NO_BUTTON)) {
             Log.i("msgBox", "buttonType=" + buttonType);
             builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                 @Override

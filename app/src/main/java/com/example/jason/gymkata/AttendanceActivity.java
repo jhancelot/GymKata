@@ -52,10 +52,11 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         // the ID and ID Label are set as Invisible in the content xml file
         mAttendanceId = (TextView) findViewById(R.id.tvAttendId);
         mAttendanceDate = (TextInputEditText) findViewById(R.id.etAttendanceDate);
+        if (mAttendanceDate != null) mAttendanceDate.setOnClickListener(this);
         mAttendanceDate.setOnClickListener(this);
         // Date Picker Fragment for DOB
         mAttDateCalendar = (ImageButton) findViewById(R.id.buttAttDateCalendar);
-        mAttDateCalendar.setOnClickListener(this);
+        if (mAttDateCalendar != null) mAttDateCalendar.setOnClickListener(this);
                 /*new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -85,8 +86,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         try {
             dataHelper = new DataHelper(AttendanceActivity.this);
             dataHelper.openForRead();
-            Attendance currentAttend = null;
-            Member currentMem = null;
+            Attendance currentAttend;
+            Member currentMem;
             if (currentAttendanceId > -1) { // then we're in EDIT MODE
                 currentAttend = dataHelper.getAttendanceRecord(currentAttendanceId);
                 Log.i("Att.popForm", "memId:" + currentMemberId);
@@ -253,7 +254,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         return super.onOptionsItemSelected(item);
     }
     private String validateForm() {
-        List<String> msgs = new ArrayList<String>();
+        List<String> msgs = new ArrayList<>();
         String readableMsg = "";
         View focusView = null;
         boolean cancel = false;
@@ -295,7 +296,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
     @Override
     public void onClick(View v) {
-        DialogFragment msFragment = null;
+        DialogFragment msFragment;
         switch (v.getId()) {
             case R.id.buttAttDateCalendar:
                 Log.i("AttAct.onClick: ", "ATTENDANCE DATE PICKER CLICKED");
@@ -319,7 +320,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         // ASSUME THE USER CANCELLED the request
         AlertDialog.Builder alert = new AlertDialog.Builder(AttendanceActivity.this);
         alert.setTitle(this.getTitle() + " decision");
-        alert.setMessage("Are you sure you want to delete this attendance record?");
+        alert.setMessage(getString(R.string.alert_attendance_delete));
         alert.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -356,6 +357,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         AlertDialog dialog = alert.create();
         dialog.show();
     }
+
+
     public static class DatePickerFragment extends DialogFragment
             implements DatePickerDialog.OnDateSetListener {
 

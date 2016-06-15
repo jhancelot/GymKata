@@ -93,6 +93,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.jason.gymkata.MainActivity" />
         </activity>
+        <activity
+            android:name=".ImportActivity"
+            android:label="@string/title_activity_import"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.jason.gymkata.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
