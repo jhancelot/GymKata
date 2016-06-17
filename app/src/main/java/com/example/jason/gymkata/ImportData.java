@@ -59,8 +59,6 @@ public class ImportData implements Constants {
         this.fileName = fileName;
     }
 
-    //@Override
-//    protected Boolean doInBackground(Void... params) {
       protected Boolean execute() {
         //File importFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "");
         File importFolder = new File(this.path, "");

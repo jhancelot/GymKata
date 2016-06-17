@@ -345,19 +345,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             } catch (InterruptedException e) {
                 return false;
             }
-            /*
-            Log.i("doInBackground", "DUMMY: " + DUMMY_CREDENTIALS);
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                Log.i("doInBackground", "pieces[0]: " + pieces[0] + " ;mEmail: " + mEmail + "; mPass: " + mPassword);
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-            */
-            // TODO: register the new account here.
-          //  return true;
+
         }
 
         @Override

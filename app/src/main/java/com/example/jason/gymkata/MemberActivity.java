@@ -86,14 +86,14 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         mPhone.addTextChangedListener(new PhoneNumberFormattingTextWatcher());
         // Date Picker Fragment for Member Since
         mMemberSince = (TextInputEditText) findViewById(R.id.etMemberSince);
-        if (mMemberSince != null) mMemberSince.addTextChangedListener(mDateEntryWatcher);
+        //if (mMemberSince != null) mMemberSince.addTextChangedListener(mDateEntryWatcher);
         mMemberSince.setOnFocusChangeListener(this);
         mMemberSinceCalendar = (ImageButton) findViewById(R.id.buttMemberSinceCalendar);
         if (mMemberSinceCalendar != null) mMemberSinceCalendar.setOnClickListener(this);
 
         // Date Picker Fragment for DOB
         mDob = (TextInputEditText) findViewById(R.id.etDOB);
-        if (mDob != null) mDob.addTextChangedListener(mDateEntryWatcher);
+        //if (mDob != null) mDob.addTextChangedListener(mDateEntryWatcher);
         mDob.setOnFocusChangeListener(this);
         mDobCalendar = (ImageButton) findViewById(R.id.buttDobCalendar);
         if (mDobCalendar != null) mDobCalendar.setOnClickListener(this);
@@ -485,7 +485,11 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
         return true;
     }
     private TextWatcher mDateEntryWatcher = new TextWatcher() {
-
+        /**
+         * the idea here is to capture the keystrokes of the user and auto-format the dates
+         * as they type. You didn't quite get it working, so comment out for now
+         * by commenting out the listener at the top of the class
+         */
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             String working = s.toString();
@@ -566,7 +570,7 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 Log.i("onClick", "mDob.getText().toString() = " + mDob.getText().toString());
                 dpFragment.setArguments(args);
                 dialogType = DIALOG_DOB;
-                dpFragment.show(getSupportFragmentManager(), "datePicker");
+                dpFragment.show(getSupportFragmentManager(), "dobPicker");
                 break;
             case R.id.etDOB:
                 Log.i("MemActivity.onClick: ", "DOB CLICKED");
@@ -576,10 +580,10 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 dpFragment = new DatePickerFragment();
                 args = new Bundle();
                 args.putString("current_date", mMemberSince.getText().toString());
-                Log.i("onClick", "mDob.getText().toString() = " + mMemberSince.getText().toString());
+                Log.i("onClick", "mMemberSince.getText().toString() = " + mMemberSince.getText().toString());
                 dpFragment.setArguments(args);
                 dialogType = DIALOG_MEMBERSINCE;
-                dpFragment.show(getSupportFragmentManager(), "datePicker");
+                dpFragment.show(getSupportFragmentManager(), "msPicker");
                 break;
             case R.id.etMemberSince:
                 Log.i("MemActivity.onClick: ", "MEMBER SINCE CLICKED");
@@ -588,23 +592,8 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 //msFragment.show(getSupportFragmentManager(), "datePicker");
                 break;
 
-            case R.id.fab:
-                Log.e("MainActivity.onClick: ", "FLOATING ACTION BAR CLICKED");
-                Snackbar.make(v, "FLOATING ACTION BAR CLICKED", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-                /*
-                int total = dataHelper.countMembers();
-                Log.e(MainActivity.class.getName(), "Total rows in database: " + total);
-                //new MsgBox("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
-                msg("Total members: " + total, v, MsgBox.YES_NO_BUTTON);
-                Snackbar.make(v, "Total rows in database: " + total, Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-               */
-                break;
-
         }
 
-        //  dataHelper.close();
 
     }
     @Override
@@ -617,14 +606,14 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
             args.putString("current_date", mMemberSince.getText().toString());
             dpFragment.setArguments(args);
             dialogType = DIALOG_MEMBERSINCE;
-            dpFragment.show(getSupportFragmentManager(), "datePicker");
+            dpFragment.show(getSupportFragmentManager(), "msPicker");
         } else if (v.getId() == R.id.etDOB && hasFocus) {
             dpFragment = new DatePickerFragment();
             Bundle args = new Bundle();
             args.putString("current_date", mDob.getText().toString());
             dpFragment.setArguments(args);
             dialogType = DIALOG_DOB;
-            dpFragment.show(getSupportFragmentManager(), "datePicker");
+            dpFragment.show(getSupportFragmentManager(), "dobPicker");
 
         }
     }
@@ -739,9 +728,13 @@ public class MemberActivity extends AppCompatActivity implements View.OnClickLis
                 Log.i("dd", "dd: " + dd);
                 // Update MemberSince OR DOB
                 if (dialogType == DIALOG_MEMBERSINCE) {
+                    Log.i("onDateSet", "Setting MEMBERSINCE to " + datestring);
                     mMemberSince.setText(MySqlHelper.getFormattedDate(datestring));
-                } else {
+                } else if (dialogType == DIALOG_DOB) {
+                    Log.i("onDateSet", "Setting DOB to " + datestring);
                     mDob.setText(MySqlHelper.getFormattedDate(datestring));
+                } else {
+                    Log.e("onDateSet", "Error dialogType unknown: " + dialogType);
                 }
 
             } catch (ParseException e) {
