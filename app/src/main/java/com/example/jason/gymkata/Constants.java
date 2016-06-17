@@ -6,6 +6,7 @@ package com.example.jason.gymkata;
  */
 public interface Constants {
 
+    static final int SLEEP_VALUE = 2000;
     static final String LOGIN_PREFS = "LoginPrefs";
     static final String LOGIN_STATE = "LoginState";
     static final String LOGGED_IN = "LoggedIn";

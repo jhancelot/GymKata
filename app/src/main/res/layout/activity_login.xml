@@ -75,9 +75,4 @@
         </LinearLayout>
     </ScrollView>
 
-    <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/imageButton"
-        android:layout_gravity="center_horizontal" />
 </LinearLayout>

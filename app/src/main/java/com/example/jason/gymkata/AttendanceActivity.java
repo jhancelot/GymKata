@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.app.DatePickerDialog;
 import android.support.design.widget.TextInputEditText;
@@ -17,7 +16,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -211,7 +209,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
                         if (currentAttendanceId == -1)
                             throw new Exception("currentAttendanceId is -1, so something went wrong");
-                        msgBox("Saved attendance for member " + mFullName.getText(), findViewById(android.R.id.content));
+                        snackMsg(getString(R.string.info_attendance_saved) + " "
+                                + mFullName.getText(), findViewById(android.R.id.content));
                         // set back to READ-ONLY MODE:
                         editMode = VIEW_MODE;
                         disableForm();
@@ -223,7 +222,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
                         setResult(RESULT_OK, i);
                         finish();
                     } catch (Exception e) {
-                        msgBox("Error creating Attendance Record: " + e.toString(), findViewById(android.R.id.content));
+                        snackMsg(getString(R.string.error_attendance_create) + " " + e.toString(),
+                                findViewById(android.R.id.content));
                         e.printStackTrace();
                     } finally {
                         if (dataHelper != null) dataHelper.close();
@@ -232,7 +232,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
                 } else {
                     // use this syntax to access the current "View"
-                    msgBox(msg, findViewById(android.R.id.content));
+                    snackMsg(msg, findViewById(android.R.id.content));
                 }
             } else {
                 Log.e("AttendActivity", "Warning unknown editMode: " + editMode);
@@ -297,21 +297,19 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
     @Override
     public void onClick(View v) {
         DialogFragment msFragment;
-        switch (v.getId()) {
-            case R.id.buttAttDateCalendar:
-                Log.i("AttAct.onClick: ", "ATTENDANCE DATE PICKER CLICKED");
-                msFragment = new DatePickerFragment();
-                msFragment.show(getSupportFragmentManager(), "datePicker");
-                break;
-            case R.id.etAttendanceDate:
-                Log.i("AttAct.onClick: ", "ATTENDANCE DATE PICKER CLICKED");
-                msFragment = new DatePickerFragment();
-                msFragment.show(getSupportFragmentManager(), "datePicker");
-                break;
+        if (v.getId() == R.id.buttAttDateCalendar || v.getId() == R.id.etAttendanceDate) {
+            Log.i("AttAct.onClick: ", "ATTENDANCE DATE PICKER CLICKED");
+            msFragment = new DatePickerFragment();
+            Bundle args = new Bundle();
+            args.putString("current_date", mAttendanceDate.getText().toString());
+            Log.i("onClick", "mDob.getText().toString() = " + mAttendanceDate.getText().toString());
+            msFragment.setArguments(args);
+            msFragment.show(getSupportFragmentManager(), "datePicker");
+
         }
     }
 
-    private void msgBox(String msg, View view) {
+    private void snackMsg(String msg, View view) {
         Log.e("AttendActivity", msg);
         Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
@@ -364,14 +362,43 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current date as the default date in the picker
+            int year = 0;
+            int month = 0;
+            int day = 0;
+            // Here's the bundle that contains the arguments
+            // if the date is in the bundle, then use it
+            Bundle args = getArguments();
+            String currDate = null;
+            if (args != null) currDate = args.getString("current_date");
+            Log.i("DatePick", "Current Date = " + currDate);
+            String currYear;
+            String currMonth;
+            String currDay;
+            // the date has to resemble a proper date (8 digits with no mask or 10 with mask)
+            if (currDate != null && currDate.length() >= 8) {
+                // strip out the "-" signs and then figure out the year, month, day
+                currDate = currDate.replaceAll("\\D+", "");
+                currYear = currDate.substring(0, 4);
+                currMonth = currDate.substring(4, 6);
+                currDay = currDate.substring(6);
+                //19710508
+                //01234567
+                Log.i("DatePick", "currMonth=" + currMonth);
+                Log.i("DatePick", "currDay=" + currDay);
+                if (currYear.length() == 4) year = Integer.parseInt(currYear);
+                if (currMonth.length() == 2) month = Integer.parseInt(currMonth);
+                if (currDay.length() == 2) day = Integer.parseInt(currDay);
+                Log.i("DatePick", "BEFORE CALENDAR year = " + year + "; month = " + month + "; day = " + day);
+            }
+
+            // otherwise, Use the current date as the default date in the picker
             final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
+            if (year == 0) year = c.get(Calendar.YEAR);
+            if (month == 0) month = c.get(Calendar.MONTH);
+            if (day == 0) day = c.get(Calendar.DAY_OF_MONTH);
 
             // Create a new instance of DatePickerDialog and return it
-            return new DatePickerDialog(getActivity(), this, year, month, day);
+            return new DatePickerDialog(getActivity(), this, year, month -1, day);
         }
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
 

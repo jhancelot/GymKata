@@ -1,10 +1,15 @@
 package com.example.jason.gymkata;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
@@ -17,11 +22,13 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import android.os.Handler;
 
 public class ImportActivity extends AppCompatActivity
         implements View.OnClickListener, Constants, MsgBox.NoticeDialogListener {
@@ -35,6 +42,11 @@ public class ImportActivity extends AppCompatActivity
     private String response = null;
     private Spinner mImportType = null;
     private String[] importTypes = null;
+
+    private ProgressBar mProgBar = null;
+    private int mProgress = 0;
+    private Handler mHandler = new Handler();
+
     private boolean filePermissionGranted = false;
     private int reportType = 0;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -69,43 +81,63 @@ public class ImportActivity extends AppCompatActivity
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.fab:
-                snackMsg(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString(), v);
+                snackMsg(getString(R.string.starting_import), v);
                 reportType = mImportType.getSelectedItemPosition();
                 if (reportType  == MEMBER_REPORT || reportType == MEMBERS_PLUS_TOTALS
                         || reportType == ATTENDANCE_REPORT) {
-                    Log.i("onclick", "currentFile? " + currentFile.getName());
-                    Log.i("onclick", "currentFile contained members? " + currentFile.getName().toUpperCase().contains("MEMBERS"));
-                    if ((reportType == MEMBER_REPORT && !currentFile.getName().toUpperCase().contains("MEMBERS")) ||
-                            (reportType == ATTENDANCE_REPORT && !currentFile.getName().toUpperCase().contains("ATTENDANCE"))) {
-                        //alertBox("The file you selected doesn't match the report type selected. Are you sure?", v, "YES_NO");
-                        DialogFragment dialog = new MsgBox();
-                        Bundle args = new Bundle();
-                        args.putString(MsgBox.TITLE, getString(R.string.title_activity_import));
-                        args.putString(MsgBox.MESSAGE, getString(R.string.report_type_mismatch));
-                        dialog.setArguments(args);
-                        // the second argument is a unique tag name used to restore the fragment
-                        // state when necessary. You can also get a handle to the fragment by
-                        // calling findFragmentByTag()
-                        dialog.show(getFragmentManager(), REPORT_TYPE_MISMATCH);
-                        msgBoxTag = REPORT_TYPE_MISMATCH;
-                    } else {
-                        // report type more or less matches the file selected, so confirm
-                        // If 'yes', then the actual call to the ImportData will occur in the
-                        // onDialogPositiveClick method below
-                        DialogFragment dialog = new MsgBox();
-                        Bundle args = new Bundle();
-                        args.putString(MsgBox.TITLE, getString(R.string.title_activity_import));
-                        args.putString(MsgBox.MESSAGE, getString(R.string.ready_to_import) + " " + currentFile.getName() + "?");
-                        dialog.setArguments(args);
-                        // the second argument is a unique tag name used to restore the fragment
-                        // state when necessary. You can also get a handle to the fragment by
-                        // calling findFragmentByTag()
-                        dialog.show(getFragmentManager(), READY_TO_IMPORT);
-                        msgBoxTag = READY_TO_IMPORT;
-                    }
+                    if (currentFile != null) {
+                        Log.i("onclick", "currentFile? " + currentFile.getName());
+                        Log.i("onclick", "currentFile contained members? " + currentFile.getName().toUpperCase().contains("MEMBERS"));
+                        if ((reportType == MEMBER_REPORT && !currentFile.getName().toUpperCase().contains("MEMBERS")) ||
+                                (reportType == ATTENDANCE_REPORT && !currentFile.getName().toUpperCase().contains("ATTENDANCE"))) {
+                            //alertBox("The file you selected doesn't match the report type selected. Are you sure?", v, "YES_NO");
+                            DialogFragment dialog = new MsgBox();
+                            Bundle args = new Bundle();
+                            args.putString(MsgBox.TITLE, getString(R.string.title_activity_import));
+                            args.putString(MsgBox.MESSAGE, getString(R.string.report_type_mismatch));
+                            dialog.setArguments(args);
+                            // the second argument is a unique tag name used to restore the fragment
+                            // state when necessary. You can also get a handle to the fragment by
+                            // calling findFragmentByTag()
+                            dialog.show(getFragmentManager(), REPORT_TYPE_MISMATCH);
+                            msgBoxTag = REPORT_TYPE_MISMATCH;
+                        } else {
+//                            Log.i("ImportAct", "showing progress bar..." + System.currentTimeMillis());
+//                            mProgBar.setVisibility(View.VISIBLE);
 
+
+                            // report type more or less matches the file selected, so confirm
+                            // If 'yes', then the actual call to the ImportData will occur in the
+                            // onDialogPositiveClick method below
+                            DialogFragment dialog = new MsgBox();
+                            Bundle args = new Bundle();
+                            args.putString(MsgBox.TITLE, getString(R.string.title_activity_import));
+                            args.putString(MsgBox.MESSAGE, getString(R.string.ready_to_import) + " " + currentFile.getName() + "?");
+                            dialog.setArguments(args);
+                            // the second argument is a unique tag name used to restore the fragment
+                            // state when necessary. You can also get a handle to the fragment by
+                            // calling findFragmentByTag()
+                            dialog.show(getFragmentManager(), READY_TO_IMPORT);
+                            msgBoxTag = READY_TO_IMPORT;
+/*
+                            // Pretend like the process takes a while
+                            try {
+                                Thread.sleep(SLEEP_VALUE);
+                            } catch (InterruptedException e) {
+                                Log.i("ImportAct", "Error running thread.sleep: " + e.toString());
+                                e.printStackTrace();
+                            }
+                            Log.i("ImportAct", "mProgress = " + mProgress);
+                            Log.i("ImportAct", "hiding progress bar..."+ System.currentTimeMillis());
+                            mProgBar.setVisibility(View.GONE);
+*/
+
+                        }
+                    } else {
+                        snackMsg(getString(R.string.no_file_selected), v);
+                    }
                 } else {
-                    snackMsg("You must select a report type first", v);
+                    snackMsg(getString(R.string.no_report_type_selected), v);
                 }
                 break;
         }
@@ -167,6 +199,8 @@ public class ImportActivity extends AppCompatActivity
         typesAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, importTypes);
         typesAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mImportType.setAdapter(typesAdapter);
+        mProgBar = (ProgressBar) findViewById(R.id.progressBar);
+
 
     }
     private void snackMsg(String msg, View view) {
@@ -210,8 +244,7 @@ public class ImportActivity extends AppCompatActivity
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                     filePermissionGranted = false;
-                    snackMsg("Permission denied. You need to grant file permissions to perform this function",
-                            findViewById(android.R.id.content));
+                    snackMsg(getString(R.string.permissions_error), findViewById(android.R.id.content));
                 }
                 return;
 
@@ -232,10 +265,12 @@ public class ImportActivity extends AppCompatActivity
         Log.i("onDiaPos", "msgBoxTag value is " + msgBoxTag);
         if (msgBoxTag != null) {
             if (msgBoxTag.equals(READY_TO_IMPORT) || msgBoxTag.equals(REPORT_TYPE_MISMATCH)) {
-                ImportData importData = new ImportData(ImportActivity.this, reportType);
-                importData.setFileName(currentFile.getName());
-                importData.setPath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
-                importData.execute();
+                // start the progress bar
+                showProgress(true);
+                // do the work
+                new DoImport().execute();
+
+
             }
         }
 
@@ -245,5 +280,73 @@ public class ImportActivity extends AppCompatActivity
     public void onDialogNegativeClick(DialogFragment dialog) {
         // user clicked the Negative button
         Log.i("onDia", "onDialogNegativeClick");
+    }
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+
+            mProgBar.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgBar.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgBar.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+
+    /**
+     * Represents an asynchronous task used to show the progress bar
+     */
+    public class DoImport extends AsyncTask<Void, Void, Boolean> {
+
+
+        DoImport() {
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                // Simulate network access.
+                Log.i("doInBackground", "simulating doing work...");
+                Thread.sleep(SLEEP_VALUE);
+                // Kick off the import process
+                ImportData importData = new ImportData(ImportActivity.this, reportType);
+                importData.setFileName(currentFile.getName());
+                importData.setPath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+                importData.execute();
+
+
+
+            } catch (InterruptedException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            showProgress(false);
+
+            if (success) {
+                snackMsg(getString(R.string.info_import_complete), findViewById(android.R.id.content));
+            } else {
+                snackMsg(getString(R.string.error_unknown_import), findViewById(android.R.id.content));
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            showProgress(false);
+        }
     }
 }

@@ -1,10 +1,14 @@
 package com.example.jason.gymkata;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
@@ -14,12 +18,12 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,6 +41,8 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
     private static CheckBox mExportMembers;
     private static CheckBox mIncludeAttTotals;
     private static CheckBox mExportAttendance;
+    private ProgressBar mProgBar = null;
+
     private static final int DIALOG_START_DATE = 0;
     private static final int DIALOG_END_DATE = 1;
     private static int dialogType = DIALOG_START_DATE;
@@ -71,6 +77,9 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
         mIncludeAttTotals.setOnClickListener(this);
         mIncludeAttTotals.setEnabled(false);
         mExportAttendance = (CheckBox) findViewById(R.id.cbExportAttendance);
+
+        mProgBar = (ProgressBar) findViewById(R.id.progressBar);
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
@@ -112,42 +121,25 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                     Log.i("MbrAct", "Message returned from validateForm: " + msg);
 
                     if (msg == null || msg.length() == 0) { // this means that there are no error msgs, so we can proceed
-                        msgBox("Exporting data...", findViewById(android.R.id.content));
+                        snackMsg(getString(R.string.info_export_data), findViewById(android.R.id.content));
                         Log.i("ExportAct", "simulating exporting...");
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            Log.e("ExportAct", "error executing sleep cycle: " + e.toString());
-                            e.printStackTrace();
-                        }
+                        // start the progress bar
+                        showProgress(true);
 
-                        if (mExportMembers.isChecked()) {
-                            ExportData exportMembers = new ExportData(ExportActivity.this, MEMBER_REPORT);
-                            exportMembers.execute();
-                        }
-                        if (mExportAttendance.isChecked()) {
-                            ExportData exportAttendance = new ExportData(ExportActivity.this, ATTENDANCE_REPORT);
-                            exportAttendance.setStartDate(mStartDate.getText().toString());
-                            exportAttendance.setEndDate(mEndDate.getText().toString());
-                            exportAttendance.execute();
-                        }
-                        if (mIncludeAttTotals.isChecked()) {
-                            ExportData exportAttendance = new ExportData(ExportActivity.this, MEMBERS_PLUS_TOTALS);
-                            exportAttendance.setStartDate(mStartDate.getText().toString());
-                            exportAttendance.setEndDate(mEndDate.getText().toString());
-                            exportAttendance.execute();
-                        }
-                        msgBox("Export complete. Data can be found in "
-                                        + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                                findViewById(android.R.id.content));
+                        // CALL DO WORK HERE
+                        DoExport exp = new DoExport(mExportMembers.isChecked(),mIncludeAttTotals.isChecked(), mExportAttendance.isChecked() );
+                        exp.setStartDate(mStartDate.getText().toString());
+                        exp.setEndDate(mEndDate.getText().toString());
+                        exp.execute();
+
 
 
                     } else {
                         // use this syntax to access the current "View"
-                        msgBox(msg, findViewById(android.R.id.content));
+                        snackMsg(msg, findViewById(android.R.id.content));
                     }
                 } else {
-                    msgBox("You need to grant file permissions to perform this function", findViewById(android.R.id.content));
+                    snackMsg(getString(R.string.error_file_permissions), findViewById(android.R.id.content));
 
                 }
 
@@ -156,7 +148,7 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
 
         }
     }
-    private void msgBox(String msg, View view) {
+    private void snackMsg(String msg, View view) {
         Log.e("ExportAct", msg);
         Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show();
@@ -247,7 +239,7 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                     filePermissionGranted = false;
-                    msgBox("Permission denied. You need to grant file permissions to perform this function",
+                    snackMsg(getString(R.string.error_file_permissions),
                             findViewById(android.R.id.content));
                 }
                 return;
@@ -298,6 +290,113 @@ public class ExportActivity extends AppCompatActivity implements View.OnClickLis
                 Log.e("Export.DateSet", "Error setting date: " + e.toString());
                 e.printStackTrace();
             }
+        }
+    }
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+
+            mProgBar.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgBar.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgBar.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        }
+    }
+    /**
+     * Represents an asynchronous task used to show the progress bar
+     */
+    public class DoExport extends AsyncTask<Void, Void, Boolean> {
+        String startDate;
+        String endDate;
+        boolean exportMembers, exportTotals, exportAttendance;
+
+
+        DoExport() {
+        }
+
+        DoExport(boolean exportMem, boolean exportTot, boolean exportAttend) {
+            this.exportMembers = exportMem;
+            this.exportTotals = exportTot;
+            this.exportAttendance = exportAttend;
+        }
+        public String getStartDate() {
+            return startDate;
+        }
+
+        public void setStartDate(String startDate) {
+            this.startDate = startDate;
+        }
+
+        public String getEndDate() {
+            return endDate;
+        }
+
+        public void setEndDate(String endDate) {
+            this.endDate = endDate;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+                // Simulate doing work
+                Log.i("doInBackground", "simulating doing work...");
+                // Kick off the export process
+                try {
+                    Thread.sleep(SLEEP_VALUE);
+
+                    if (exportMembers) {
+                        ExportData exportMembers = new ExportData(ExportActivity.this, MEMBER_REPORT);
+                        exportMembers.execute();
+                    }
+                    if (exportAttendance) {
+                        ExportData exportAttendance = new ExportData(ExportActivity.this, ATTENDANCE_REPORT);
+                        exportAttendance.setStartDate(startDate);
+                        exportAttendance.setEndDate(endDate);
+                        exportAttendance.execute();
+                    }
+                    if (exportTotals) {
+                        ExportData exportAttendance = new ExportData(ExportActivity.this, MEMBERS_PLUS_TOTALS);
+                        exportAttendance.setStartDate(startDate);
+                        exportAttendance.setEndDate(endDate);
+                        exportAttendance.execute();
+                    }
+                } catch (InterruptedException e) {
+                    Log.e("ExportAct", "error executing sleep cycle: " + e.toString());
+                    e.printStackTrace();
+                    return false;
+                }
+
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            showProgress(false);
+
+            if (success) {
+                snackMsg(getString(R.string.info_export_complete) + " "
+                                + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                        findViewById(android.R.id.content));
+            } else {
+                snackMsg(getString(R.string.error_unknown_export), findViewById(android.R.id.content));
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            showProgress(false);
         }
     }
 }

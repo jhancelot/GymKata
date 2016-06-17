@@ -24,7 +24,7 @@ import au.com.bytecode.opencsv.CSVWriter;
 /**
  * Created by Jason on 2016-05-14.
  */
-public class ExportData extends AsyncTask<Void, Boolean, Boolean> implements Constants {
+public class ExportData implements Constants {
     Context con;
     ProgressDialog dialog;
     int reportType;
@@ -61,6 +61,7 @@ public class ExportData extends AsyncTask<Void, Boolean, Boolean> implements Con
     public void setReportType(int reportType) {
         this.reportType = reportType;
     }
+    /*
     @Override
     protected void onPreExecute() {
         dialog = new ProgressDialog(con);
@@ -71,8 +72,8 @@ public class ExportData extends AsyncTask<Void, Boolean, Boolean> implements Con
         dialog.show();
 
     }
-    @Override
-    protected Boolean doInBackground(Void... params) {
+    */
+    protected Boolean execute() {
         File exportFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "");
         path = exportFolder.getPath();
         Log.i("ExportData", "checking for existing export folder: " + path);
@@ -147,6 +148,7 @@ public class ExportData extends AsyncTask<Void, Boolean, Boolean> implements Con
         return false;
     }
 
+/*
     @Override
     protected void onPostExecute(Boolean result) {
         if (dialog.isShowing()) dialog.dismiss();
@@ -159,4 +161,5 @@ public class ExportData extends AsyncTask<Void, Boolean, Boolean> implements Con
          //           Snackbar.LENGTH_LONG).setAction("Action", null).show();
 
     }
+    */
 }

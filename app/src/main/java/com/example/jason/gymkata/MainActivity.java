@@ -418,21 +418,6 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     snackMsg(getString(R.string.warning_no_member), findViewById(android.R.id.content));
                 }
-
-
-                // This code removes an entry from the list with a "fade" effect
-                /*
-                  v.animate().setDuration(2000).alpha(0)
-                          .withEndAction(new Runnable() {
-                              @Override
-                              public void run() {
-                dataHelper.deleteMember(currentMember);
-                adapter.remove(currentMember);
-
-                              }
-                          });
-                */
-
             }
         });
     }

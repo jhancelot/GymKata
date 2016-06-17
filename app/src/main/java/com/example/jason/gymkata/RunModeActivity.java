@@ -71,23 +71,6 @@ public class RunModeActivity extends AppCompatActivity {
                         "position=" + position
                                 + " and id=" + id
                                 + " and adapterViewItem=" + adapterView.getItemAtPosition(position));
-                //Log.e("setOnItem...", "lvMembers.getSelectedItem(): " + lvMembers.getSelectedItem());
-
-
-
-
-                // This code removes an entry from the list with a "fade" effect
-                /*
-                  v.animate().setDuration(2000).alpha(0)
-                          .withEndAction(new Runnable() {
-                              @Override
-                              public void run() {
-                dataHelper.deleteMember(currentMember);
-                adapter.remove(currentMember);
-
-                              }
-                          });
-                */
 
             }
         });
@@ -136,28 +119,24 @@ public class RunModeActivity extends AppCompatActivity {
                         if (attendId == -1) {
                             attendId = dataHelper.createAttend(att);
                             if (attendId == -1) throw new Exception("attendId is -1, so something went wrong");
-                            Snackbar.make(view, "Welcome " + currentMember.getFirstName() + " " + currentMember.getLastName() + "!", Snackbar.LENGTH_LONG)
-                                    .setAction("Action", null).show();
+                            snackMsg(getString(R.string.welcome_message) + " " + currentMember.getFirstName()
+                                    + " " + currentMember.getLastName() + "!", view);
                         } else { // then the person is trying to sign-in twice on the same day
-                            Snackbar.make(view, currentMember.getFirstName() + " " + currentMember.getLastName() + " has already signed in today!", Snackbar.LENGTH_LONG)
-                                    .setAction("Action", null).show();
+                            snackMsg(currentMember.getFirstName() + " " + currentMember.getLastName()
+                                    + getString(R.string.warn_duplicate_signin) + " !", view);
                         }
                     } catch (Exception e) {
-                        Snackbar.make(view, "An error occurred attempting to sign you in...", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                        Log.e("RunMode", "Error creating Attendance Record: " + e.toString());
+                        snackMsg(getString(R.string.error_signin_error), view);
                         e.printStackTrace();
                     } finally {
                         if (dataHelper != null) dataHelper.close();
                     }
                 } else {
-                    Snackbar.make(view, "No member selected. Select a member and try again.", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
+                    snackMsg(getString(R.string.warn_no_member_selected), view);
                 }
             }
         });
     }
-
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_runmode, menu);
@@ -181,6 +160,11 @@ public class RunModeActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+    private void snackMsg(String msg, View view) {
+        Snackbar.make(view, msg, Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show();
+
     }
 
 }

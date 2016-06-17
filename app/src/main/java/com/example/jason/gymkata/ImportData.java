@@ -22,7 +22,8 @@ import au.com.bytecode.opencsv.CSVWriter;
  * Created by Jason on 2016-05-14.
  * This class is used to export data to CSV format
  */
-public class ImportData extends AsyncTask<Void, Boolean, Boolean> implements Constants {
+//public class ImportData extends AsyncTask<Void, Boolean, Boolean> implements Constants {
+public class ImportData implements Constants {
     Context con;
     ProgressDialog dialog;
     String path;
@@ -58,11 +59,9 @@ public class ImportData extends AsyncTask<Void, Boolean, Boolean> implements Con
         this.fileName = fileName;
     }
 
-
-
-
-    @Override
-    protected Boolean doInBackground(Void... params) {
+    //@Override
+//    protected Boolean doInBackground(Void... params) {
+      protected Boolean execute() {
         //File importFolder = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "");
         File importFolder = new File(this.path, "");
         // path = importFolder.getPath();
@@ -193,4 +192,6 @@ public class ImportData extends AsyncTask<Void, Boolean, Boolean> implements Con
         return false;
 
     }
+
+
 }

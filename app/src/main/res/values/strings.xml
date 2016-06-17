@@ -48,6 +48,10 @@
     <string name="title_activity_run_mode">Chinese Boxing Connection</string>
     <string name="attendance_instructions">Find Your Name to Sign In</string>
     <string name="hello_blank_fragment">Hello Blank Fragment</string>
+    <string name="welcome_message">Welcome</string>
+    <string name="warn_duplicate_signin">has already signed in today</string>
+    <string name="warn_no_member_selected">No member selected. Select a member and try again.</string>
+    <string name="error_signin_error">An error occurred attempting to sign you in...</string>
 
     <!-- Strings related to Member Activity -->
     <string name="error_invalid_fname">First Name value is invalid</string>
@@ -93,6 +97,8 @@
     <string name="warning_no_attendance">No Attendance record selected</string>
     <string name="searchview_hint_attendance">[Enter a date to filter]</string>
     <string name="alert_attendance_delete">Are you sure you want to delete this attendance record?</string>
+    <string name="error_attendance_create">Error creating Attendance Record:</string>
+    <string name="info_attendance_saved">Saved attendance for member</string>
 
 
     <!-- Main Activity -->
@@ -106,15 +112,25 @@
     <string name="export_exp_members">Export Members</string>
     <string name="export_include_att_totals">Include Attendance Totals</string>
     <string name="export_exp_attendance">Export Attendance</string>
+    <string name="info_export_data">Exporting data...</string>
+    <string name="info_export_complete">Export complete. Data can be found in</string>
     <string name="error_invalid_startdate">Start Date is invalid</string>
     <string name="error_invalid_enddate">End Date is invalid</string>
+    <string name="error_file_permissions">You need to grant file permissions to perform this function</string>
+    <string name="error_unknown_export">There was an unknown error during export</string>
 
     <!-- Import Activity -->
     <string name="import_file_prompt">Please select a file:</string>
     <string name="warning_no_file">No file selected</string>
     <string name="title_activity_import">Import Member Data</string>
     <string name="report_type_mismatch">The file you selected does not match the report type selected. Are you sure?</string>
+    <string name="no_file_selected">Please select a file to continue</string>
+    <string name="no_report_type_selected">You must select a report type first</string>
     <string name="ready_to_import">Ready to import file</string>
+    <string name="starting_import">Starting import...</string>
+    <string name="permissions_error">Permission denied. You need to grant file permissions to perform this function</string>
+    <string name="error_unknown_import">There was an unknown error during export</string>
+    <string name="info_import_complete">Import complete!</string>
     <string-array name="report_types">
         <item>Members</item>
         <item>Members with Totals</item>
